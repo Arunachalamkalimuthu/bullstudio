@@ -1,0 +1,10 @@
+{
+  "name": "@bullstudio/dayjs",
+  "version": "1.0.0",
+  "description": "Day.js for Bull Studio",
+  "author": "Bull Studio",
+  "license": "MIT",
+  "dependencies": {
+    "dayjs": "^1.11.19"
+  }
+}

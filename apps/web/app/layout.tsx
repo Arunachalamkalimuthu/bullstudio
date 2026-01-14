@@ -1,30 +1,45 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import type { Metadata } from "next";
+//import "./globals.css";
+import { DM_Sans } from "next/font/google";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import "@bullstudio/ui/styles/globals.css";
+import { Toaster } from "@bullstudio/ui/components/sonner";
+import { DialogProvider } from "@/components/dialog/DialogProvider";
+import { Providers } from "@/components/providers/Providers";
 
-import "@workspace/ui/globals.css"
-import { Providers } from "@/components/providers"
+export const metadata: Metadata = {
+  title: "Bull Studio",
+  description: "Bull Studio",
+};
 
-const fontSans = Geist({
+const font = DM_Sans({
   subsets: ["latin"],
+  weight: ["400"],
   variable: "--font-sans",
-})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
-      >
-        <Providers>{children}</Providers>
+      <body className={`${font.className} font-sans overflow-y-hidden`}>
+        <NextThemesProvider
+          attribute="class"
+          enableSystem
+          defaultTheme="dark"
+          disableTransitionOnChange
+          enableColorScheme
+        >
+          <Providers>
+            <DialogProvider />
+            <main>{children}</main>
+            <Toaster />
+          </Providers>
+        </NextThemesProvider>
       </body>
     </html>
-  )
+  );
 }
