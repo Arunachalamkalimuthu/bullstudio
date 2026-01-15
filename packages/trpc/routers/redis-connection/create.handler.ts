@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import { RedisConnectionStatus } from "@bullstudio/prisma";
+import { getConnectionManager } from "@bullstudio/queue";
 import { AuthedTRPCContext } from "../../types";
 import { workspaceGuard } from "../../guards/workspace";
 import { encrypt } from "../../services/encryption";
-import { connectServiceClient } from "../../services/connect-service";
 import { CreateRedisConnectionInput } from "./create.schema";
 
 type CreateRedisConnectionHandlerProps = {
@@ -68,10 +68,12 @@ export async function createRedisConnectionHandler({
     },
   });
 
-  // Propagate to connect service
+  // Register with connection manager
   try {
-    const serviceConnection = await connectServiceClient.addConnection({
+    const connectionManager = getConnectionManager(prisma);
+    const status = await connectionManager.addConnection({
       id: connection.id,
+      workspaceId: input.workspaceId,
       host: input.host,
       port: input.port,
       database: input.database,
@@ -81,28 +83,19 @@ export async function createRedisConnectionHandler({
       tlsCert: input.tlsCert,
     });
 
-    // Update status based on connect service response
+    // Status is already updated by the connection manager via handleStateChange
+    // but we return the current status to the client
     const newStatus =
-      serviceConnection.status === "connected"
+      status.state === "connected"
         ? RedisConnectionStatus.Connected
-        : serviceConnection.status === "error"
+        : status.state === "error"
           ? RedisConnectionStatus.Failed
           : RedisConnectionStatus.Pending;
-
-    await prisma.redisConnection.update({
-      where: { id: connection.id },
-      data: {
-        status: newStatus,
-        lastConnectedAt:
-          newStatus === RedisConnectionStatus.Connected ? new Date() : null,
-        lastError: serviceConnection.error ?? null,
-      },
-    });
 
     return { ...connection, status: newStatus };
   } catch (error) {
     // Log but don't fail - connection is saved in DB
-    console.error("[createRedisConnection] Failed to propagate to connect service:", error);
+    console.error("[createRedisConnection] Failed to establish connection:", error);
     return connection;
   }
 }

@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { Prisma, RedisConnectionStatus } from "@bullstudio/prisma";
+import { getConnectionManager } from "@bullstudio/queue";
 import { AuthedTRPCContext } from "../../types";
 import { encrypt, decrypt } from "../../services/encryption";
-import { connectServiceClient } from "../../services/connect-service";
 import { UpdateRedisConnectionInput } from "./update.schema";
 
 type UpdateRedisConnectionHandlerProps = {
@@ -122,9 +122,9 @@ export async function updateRedisConnectionHandler({
     },
   });
 
-  // Propagate to connect service
+  // Update connection in connection manager
   try {
-    // Decrypt credentials for connect service
+    // Decrypt credentials for connection manager
     let password: string | undefined;
     let tlsCert: string | undefined;
 
@@ -148,8 +148,10 @@ export async function updateRedisConnectionHandler({
       });
     }
 
-    const serviceConnection = await connectServiceClient.updateConnection({
+    const connectionManager = getConnectionManager(prisma);
+    const status = await connectionManager.updateConnection({
       id: updated.id,
+      workspaceId: connection.workspaceId,
       host: updated.host,
       port: updated.port,
       database: updated.database,
@@ -159,29 +161,19 @@ export async function updateRedisConnectionHandler({
       tlsCert,
     });
 
-    // Update status based on connect service response
+    // Status is already updated by the connection manager via handleStateChange
     const newStatus =
-      serviceConnection.status === "connected"
+      status.state === "connected"
         ? RedisConnectionStatus.Connected
-        : serviceConnection.status === "error"
+        : status.state === "error"
           ? RedisConnectionStatus.Failed
           : RedisConnectionStatus.Disconnected;
-
-    await prisma.redisConnection.update({
-      where: { id: updated.id },
-      data: {
-        status: newStatus,
-        lastConnectedAt:
-          newStatus === RedisConnectionStatus.Connected ? new Date() : undefined,
-        lastError: serviceConnection.error ?? null,
-      },
-    });
 
     // Return without sensitive fields
     const { encryptedPassword, passwordIv, passwordTag, encryptedTlsCert, tlsCertIv, tlsCertTag, ...result } = updated;
     return { ...result, status: newStatus };
   } catch (error) {
-    console.error("[updateRedisConnection] Failed to propagate to connect service:", error);
+    console.error("[updateRedisConnection] Failed to update connection:", error);
     const { encryptedPassword, passwordIv, passwordTag, encryptedTlsCert, tlsCertIv, tlsCertTag, ...result } = updated;
     return result;
   }

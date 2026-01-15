@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${font.className} font-sans overflow-y-hidden`}>
+      <body className={`${font.className} font-sans`}>
         <NextThemesProvider
           attribute="class"
           enableSystem

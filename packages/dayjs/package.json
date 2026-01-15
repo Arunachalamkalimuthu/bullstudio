@@ -4,6 +4,11 @@
   "description": "Day.js for Bull Studio",
   "author": "Bull Studio",
   "license": "MIT",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
   "dependencies": {
     "dayjs": "^1.11.19"
   }

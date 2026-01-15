@@ -13,6 +13,7 @@
     "@bullstudio/connect-types": "workspace:*",
     "@bullstudio/dayjs": "workspace:*",
     "@bullstudio/prisma": "workspace:*",
+    "@bullstudio/queue": "workspace:*",
     "@tanstack/react-query": "^5.90.12",
     "@trpc/client": "^11.7.2",
     "@trpc/react-query": "^11.7.2",

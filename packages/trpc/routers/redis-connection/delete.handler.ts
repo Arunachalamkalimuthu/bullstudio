@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
+import { getConnectionManager } from "@bullstudio/queue";
 import { AuthedTRPCContext } from "../../types";
-import { connectServiceClient } from "../../services/connect-service";
 import { DeleteRedisConnectionInput } from "./delete.schema";
 
 type DeleteRedisConnectionHandlerProps = {
@@ -41,12 +41,13 @@ export async function deleteRedisConnectionHandler({
     });
   }
 
-  // Remove from connect service first
+  // Remove from connection manager first
   try {
-    await connectServiceClient.removeConnection(input.connectionId);
+    const connectionManager = getConnectionManager(prisma);
+    await connectionManager.removeConnection(input.connectionId);
   } catch (error) {
-    console.error("[deleteRedisConnection] Failed to remove from connect service:", error);
-    // Continue with deletion from DB even if connect service fails
+    console.error("[deleteRedisConnection] Failed to remove from connection manager:", error);
+    // Continue with deletion from DB even if connection manager fails
   }
 
   await prisma.redisConnection.delete({
