@@ -3,7 +3,10 @@ import { AlertStatus } from "@bullstudio/prisma";
 import { getConnectionManager } from "@bullstudio/queue";
 import { redis } from "../lib/redis";
 import { prisma } from "../lib/prisma";
-import { ALERT_CHECK_QUEUE_NAME, type AlertCheckJobData } from "../queues/alert-check";
+import {
+  ALERT_CHECK_QUEUE_NAME,
+  type AlertCheckJobData,
+} from "../queues/alert-check";
 import { emailQueue, type EmailJobData } from "../queues/email";
 import { evaluateAlert, type AlertConfig } from "../evaluators";
 
@@ -11,7 +14,9 @@ export function createAlertCheckerWorker() {
   const worker = new Worker<AlertCheckJobData>(
     ALERT_CHECK_QUEUE_NAME,
     async (job: Job<AlertCheckJobData>) => {
-      console.log(`[AlertChecker] Starting alert check at ${new Date().toISOString()}`);
+      console.log(
+        `[AlertChecker] Starting alert check at ${new Date().toISOString()}`
+      );
 
       const connectionManager = getConnectionManager(prisma);
 
@@ -57,10 +62,11 @@ export function createAlertCheckerWorker() {
             continue;
           }
 
+          const config = alert.config as AlertConfig;
           // Evaluate the alert
           const result = await evaluateAlert(
             alert.type,
-            alert.config as AlertConfig,
+            config,
             alert.queueName,
             service,
             alert.status
@@ -118,8 +124,15 @@ export function createAlertCheckerWorker() {
                 connectionName: alert.connection.name,
                 status: result.status,
                 value: result.value,
+                threshold: (config.threshold as number) || 0,
                 message: result.message,
-                timestamp: Date.now(),
+                triggerTimestamp:
+                  result.status === "Triggered"
+                    ? Date.now()
+                    : alert.lastTriggeredAt?.getTime() || Date.now(),
+                resolvedTimestamp:
+                  result.status === "OK" ? Date.now() : undefined,
+                lastValue: alert.lastValue || undefined,
               };
 
               await emailQueue.add("send-alert-email", emailJobData);
@@ -134,7 +147,10 @@ export function createAlertCheckerWorker() {
 
           processed++;
         } catch (error) {
-          console.error(`[AlertChecker] Error evaluating alert ${alert.id}:`, error);
+          console.error(
+            `[AlertChecker] Error evaluating alert ${alert.id}:`,
+            error
+          );
           errors++;
         }
       }
@@ -155,9 +171,12 @@ export function createAlertCheckerWorker() {
     console.log(`[AlertChecker] Job ${job.id} completed`);
   });
 
-  worker.on("failed", (job: Job<AlertCheckJobData> | undefined, error: Error) => {
-    console.error(`[AlertChecker] Job ${job?.id} failed:`, error);
-  });
+  worker.on(
+    "failed",
+    (job: Job<AlertCheckJobData> | undefined, error: Error) => {
+      console.error(`[AlertChecker] Job ${job?.id} failed:`, error);
+    }
+  );
 
   return worker;
 }

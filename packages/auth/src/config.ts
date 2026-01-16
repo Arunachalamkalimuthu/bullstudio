@@ -3,6 +3,8 @@ import Resend from "next-auth/providers/resend";
 import { prisma } from "@bullstudio/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Google from "next-auth/providers/google";
+import { defaultClient } from "@bullstudio/email/client";
+import { MagicLinkEmail, MagicLinkEmailProps } from "@bullstudio/email";
 
 export const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
@@ -15,6 +17,17 @@ export const authConfig: NextAuthConfig = {
   providers: [
     Resend({
       from: "noreply@scheduler.barbell-consulting.com",
+      sendVerificationRequest: async ({ identifier, url }) => {
+        const props: MagicLinkEmailProps = {
+          magicLink: url,
+        };
+        await defaultClient.send({
+          to: identifier,
+          subject: "Your sign-in link for Bull Studio",
+          template: MagicLinkEmail,
+          props,
+        });
+      },
     }),
     Google,
   ],

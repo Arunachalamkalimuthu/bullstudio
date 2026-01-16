@@ -2,12 +2,19 @@ import { WorkspaceProvider } from "@/components/providers/WorkspaceProvider";
 import { auth } from "@bullstudio/auth";
 import { prisma } from "@bullstudio/prisma";
 import { notFound, redirect } from "next/navigation";
-import { StringFormatParams } from "zod/v4/core";
 
-const getCurrentWorkspace = async (userId: string, workspaceSlug: string) => {
+const getCurrentWorkspace = async (
+  userId: string,
+  orgSlug: string,
+  workspaceSlug: string
+) => {
   // Placeholder function to simulate fetching workspace data
   const ws = await prisma.workspace.findFirst({
-    where: { slug: workspaceSlug, members: { some: { userId } } },
+    where: {
+      slug: workspaceSlug,
+      organization: { slug: orgSlug },
+      members: { some: { userId } },
+    },
     select: { id: true, name: true, slug: true },
   });
   return ws;
@@ -18,7 +25,7 @@ export default async function WorkspaceLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ workspace: string }>;
+  params: Promise<{ organizationSlug: string; workspace: string }>;
 }) {
   const session = await auth();
 
@@ -26,9 +33,13 @@ export default async function WorkspaceLayout({
     return redirect("/login");
   }
 
-  const { workspace: workspaceSlug } = await params;
+  const { organizationSlug, workspace: workspaceSlug } = await params;
 
-  const workspace = await getCurrentWorkspace(session.user.id, workspaceSlug);
+  const workspace = await getCurrentWorkspace(
+    session.user.id,
+    organizationSlug,
+    workspaceSlug
+  );
 
   if (!workspace) {
     return notFound();

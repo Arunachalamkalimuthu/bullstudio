@@ -1,8 +1,7 @@
-
 {
-  "extends": "@bullstudio/typescript-config/base.json",
+  "extends": "@bullstudio/typescript-config/react-library.json",
   "compilerOptions": {
-    "jsx": "react-jsx"
+    "baseUrl": ".",
   },
   "include": ["."],
   "exclude": ["node_modules", "dist"]

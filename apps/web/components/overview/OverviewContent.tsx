@@ -98,7 +98,10 @@ export function OverviewContent() {
         <OverviewSkeleton />
       ) : metrics ? (
         <>
-          <AlertsActivityCard connectionId={connectionId} timeRangeHours={timeRange} />
+          <AlertsActivityCard
+            connectionId={connectionId}
+            timeRangeHours={timeRange}
+          />
 
           <MetricCardsGrid
             summary={metrics.summary}

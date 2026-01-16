@@ -79,7 +79,7 @@ export function JobDetail({ workspace, jobId }: JobDetailProps) {
   };
 
   const goBack = () => {
-    router.push(`/${workspace}/jobs`);
+    router.back();
   };
 
   if (!connectionId || !queueName) {

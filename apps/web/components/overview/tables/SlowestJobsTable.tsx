@@ -18,9 +18,9 @@ import {
 } from "@bullstudio/ui/components/table";
 import { useWorkspaceContext } from "@/components/providers/WorkspaceProvider";
 import type { RouterOutput } from "@/lib/trpc";
+import { useNavigateToJob } from "@/components/jobs/useNavigateToJob";
 
-type SlowJob =
-  RouterOutput["queue"]["overviewMetrics"]["slowestJobs"][number];
+type SlowJob = RouterOutput["queue"]["overviewMetrics"]["slowestJobs"][number];
 
 type SlowestJobsTableProps = {
   jobs: SlowJob[];
@@ -34,15 +34,11 @@ function formatDuration(ms: number): string {
   return `${(ms / 3600000).toFixed(1)}h`;
 }
 
-export function SlowestJobsTable({ jobs, connectionId }: SlowestJobsTableProps) {
-  const router = useRouter();
-  const { workspaceSlug } = useWorkspaceContext();
-
-  const navigateToJob = (job: SlowJob) => {
-    router.push(
-      `/${workspaceSlug}/jobs/${job.id}?connectionId=${connectionId}&queueName=${encodeURIComponent(job.queueName)}`
-    );
-  };
+export function SlowestJobsTable({
+  jobs,
+  connectionId,
+}: SlowestJobsTableProps) {
+  const gotoJob = useNavigateToJob();
 
   return (
     <Card className="bg-zinc-900/50 border-zinc-800">
@@ -73,7 +69,7 @@ export function SlowestJobsTable({ jobs, connectionId }: SlowestJobsTableProps) 
                 <TableRow
                   key={job.id}
                   className="border-zinc-800 cursor-pointer hover:bg-zinc-800/50"
-                  onClick={() => navigateToJob(job)}
+                  onClick={() => gotoJob(job.id, connectionId, job.queueName)}
                 >
                   <TableCell>
                     <div className="flex flex-col">

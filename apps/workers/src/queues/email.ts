@@ -13,9 +13,12 @@ export type EmailJobData = {
   queueName: string;
   connectionName: string;
   status: AlertStatus;
-  value: number;
+  threshold: number;
   message: string;
-  timestamp: number;
+  triggerTimestamp: number;
+  value: number;
+  lastValue?: number;
+  resolvedTimestamp?: number;
 };
 
 export const emailQueue = new Queue<EmailJobData>(EMAIL_QUEUE_NAME, {

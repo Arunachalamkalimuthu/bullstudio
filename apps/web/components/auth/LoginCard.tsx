@@ -50,6 +50,7 @@ export const LoginCard = () => {
   const magicLinkSignIn = async (data: z.infer<typeof magicLinkSchema>) => {
     await signIn("resend", {
       email: data.email,
+      redirect: false,
     });
     toast.success("Magic link sent to your email");
   };

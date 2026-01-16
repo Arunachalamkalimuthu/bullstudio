@@ -19,31 +19,43 @@ import {
 import { Logo } from "./Logo";
 import { UserNav } from "./UserNav";
 import { WorkspaceSelector } from "./WorkspaceSelector";
+import path from "path";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const params = useParams();
-  const workspaceSlug = params.workspace as string | undefined;
+  const { organizationSlug: orgSlug, workspace: workspaceSlug } = useParams();
+
+  const getItemUrl = (base: string) => {
+    return `/${orgSlug}/${workspaceSlug}${base}`;
+  };
+
+  const isActive = (href: string) => {
+    const isBasePath = href === getItemUrl("");
+    if (isBasePath) {
+      return pathname === href;
+    }
+    return pathname.startsWith(href);
+  };
 
   const navItems = [
     {
       title: "Overview",
-      href: workspaceSlug ? `/${workspaceSlug}` : "/",
+      href: getItemUrl(""),
       icon: LayoutDashboard,
     },
     {
       title: "Jobs",
-      href: workspaceSlug ? `/${workspaceSlug}/jobs` : "/jobs",
+      href: getItemUrl("/jobs"),
       icon: ListTodo,
     },
     {
       title: "Alerts",
-      href: workspaceSlug ? `/${workspaceSlug}/alerts` : "/alerts",
+      href: getItemUrl("/alerts"),
       icon: Bell,
     },
     {
       title: "Connections",
-      href: workspaceSlug ? `/${workspaceSlug}/connections` : "/connections",
+      href: getItemUrl("/connections"),
       icon: Database,
     },
   ];
@@ -68,17 +80,13 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/" &&
-                    item.href !== `/${workspaceSlug}` &&
-                    pathname.startsWith(item.href));
+                const active = isActive(item.href);
 
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
-                      isActive={isActive}
+                      isActive={active}
                       tooltip={item.title}
                       className="h-10 transition-colors"
                     >

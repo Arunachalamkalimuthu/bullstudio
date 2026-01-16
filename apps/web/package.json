@@ -14,6 +14,7 @@
   "dependencies": {
     "@bullstudio/auth": "workspace:*",
     "@bullstudio/dayjs": "workspace:*",
+    "@bullstudio/email": "workspace:*",
     "@bullstudio/prisma": "workspace:*",
     "@bullstudio/trpc": "workspace:*",
     "@bullstudio/ui": "workspace:*",

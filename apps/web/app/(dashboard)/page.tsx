@@ -1,22 +1,28 @@
-import { SidebarTrigger } from "@bullstudio/ui/components/sidebar";
-import { Separator } from "@bullstudio/ui/components/separator";
+import { auth } from "@bullstudio/auth";
+import { prisma } from "@bullstudio/prisma";
+import { redirect } from "next/navigation";
 
-export default function OverviewPage() {
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <h1 className="text-lg font-semibold">Overview</h1>
-      </header>
+const getDefaultOrganizationSlug = async (userId: string) => {
+  const firstOrg = await prisma.organization.findFirst({
+    where: { members: { some: { userId } } },
+    select: { slug: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return firstOrg?.slug;
+};
 
-      {/* Content */}
-      <main className="flex-1 p-6">
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          <p>Overview dashboard coming soon...</p>
-        </div>
-      </main>
-    </div>
-  );
+export default async function DefaultPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return redirect("/login");
+  }
+
+  const orgSlug = await getDefaultOrganizationSlug(session.user.id);
+  if (!orgSlug) {
+    return redirect("/onboarding");
+  }
+
+  console.log("Redirecting to organization:", orgSlug);
+
+  return redirect(`/${orgSlug}`);
 }

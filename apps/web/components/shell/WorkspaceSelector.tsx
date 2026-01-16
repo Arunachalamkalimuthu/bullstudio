@@ -36,6 +36,7 @@ export function WorkspaceSelector() {
   const dialogStore = useDialogStore();
 
   const currentWorkspaceSlug = params.workspace as string | undefined;
+  const currentOrgSlug = params.organizationSlug as string | undefined;
 
   const { data: organizations, isLoading: isLoadingOrgs } =
     trpc.organization.list.useQuery();
@@ -55,9 +56,9 @@ export function WorkspaceSelector() {
 
   const handleWorkspaceSelect = useCallback(
     (slug: string) => {
-      router.push(`/${slug}`);
+      router.push(`/${currentOrgSlug}/${slug}`);
     },
-    [router]
+    [router, currentOrgSlug]
   );
 
   const handleCreateWorkspace = useCallback(() => {
@@ -74,8 +75,8 @@ export function WorkspaceSelector() {
 
   const handleWorkspaceSettings = useCallback(() => {
     if (!currentWorkspace) return;
-    router.push(`/${currentWorkspace.slug}/settings`);
-  }, [currentWorkspace, router]);
+    router.push(`/${currentOrgSlug}/${currentWorkspace.slug}/settings`);
+  }, [currentWorkspace, currentOrgSlug, router]);
 
   const isLoading = isLoadingOrgs || isLoadingWorkspaces;
 

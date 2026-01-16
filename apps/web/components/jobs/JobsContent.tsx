@@ -35,6 +35,7 @@ import dayjs from "@bullstudio/dayjs";
 import { trpc } from "@/lib/trpc";
 import { JobStatusBadge, type JobStatus } from "./JobStatusBadge";
 import { useWorkspaceContext } from "../providers/WorkspaceProvider";
+import { useOrganizationContext } from "../providers/OrganizationProvider";
 
 type SortField = "name" | "queueName" | "status" | "timestamp" | "duration";
 type SortOrder = "asc" | "desc";
@@ -63,6 +64,7 @@ export function JobsContent() {
   const params = useParams();
 
   const { workspaceId, workspaceSlug } = useWorkspaceContext();
+  const { orgSlug: organizationSlug } = useOrganizationContext();
 
   const [connectionId, setConnectionId] = useState<string>("");
   const [queueName, setQueueName] = useState<string>("");
@@ -211,7 +213,7 @@ export function JobsContent() {
 
   const navigateToJob = (jobId: string) => {
     router.push(
-      `/${workspaceSlug}/jobs/${jobId}?connectionId=${connectionId}&queueName=${queueName}`
+      `/${organizationSlug}/${workspaceSlug}/jobs/${jobId}?connectionId=${connectionId}&queueName=${queueName}`
     );
   };
 

@@ -53,7 +53,7 @@ export function WorkspaceStep({
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-    setValue("slug", slug, { shouldValidate: true });
+    setValue("slug", slug, { shouldValidate: true, shouldDirty: true });
   }, [name, setValue]);
 
   const onSubmit = (formData: WorkspaceFormValues) => {
@@ -82,9 +82,7 @@ export function WorkspaceStep({
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>Workspace Name</FieldLabel>
               <Input {...field} placeholder="Production" />
-              {fieldState.error && (
-                <FieldError errors={[fieldState.error]} />
-              )}
+              {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -99,9 +97,7 @@ export function WorkspaceStep({
               <p className="text-xs text-muted-foreground mt-1">
                 This will be used in URLs
               </p>
-              {fieldState.error && (
-                <FieldError errors={[fieldState.error]} />
-              )}
+              {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />

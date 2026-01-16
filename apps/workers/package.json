@@ -11,12 +11,12 @@
   },
   "dependencies": {
     "@bullstudio/connect-types": "workspace:*",
+    "@bullstudio/email": "workspace:*",
     "@bullstudio/prisma": "workspace:*",
     "@bullstudio/queue": "workspace:*",
     "bullmq": "^5.34.8",
     "dotenv": "^17.2.3",
-    "ioredis": "^5.4.2",
-    "resend": "^4.1.2"
+    "ioredis": "^5.4.2"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
