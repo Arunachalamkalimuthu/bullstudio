@@ -5,7 +5,9 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate-dev": "npx prisma migrate dev --skip-generate",
+    "prisma:deploy": "npx prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
