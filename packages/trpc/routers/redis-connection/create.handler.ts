@@ -3,6 +3,7 @@ import { RedisConnectionStatus } from "@bullstudio/prisma";
 import { getConnectionManager } from "@bullstudio/queue";
 import { AuthedTRPCContext } from "../../types";
 import { workspaceGuard } from "../../guards/workspace";
+import { connectionLimitGuard } from "../../guards/billing";
 import { encrypt } from "../../services/encryption";
 import { CreateRedisConnectionInput } from "./create.schema";
 
@@ -18,6 +19,9 @@ export async function createRedisConnectionHandler({
   const { prisma } = ctx;
 
   await workspaceGuard({ ctx, workspaceId: input.workspaceId });
+
+  // Check billing limits
+  await connectionLimitGuard(input.workspaceId);
 
   const existingConnection = await prisma.redisConnection.findFirst({
     where: {

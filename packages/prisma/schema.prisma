@@ -77,7 +77,9 @@ model Organization {
   members          OrganizationMember[]
   subscription     Subscription?
   subscriptionPlan SubscriptionPlan     @default(Free)
-  stripeCustomerId String?              @unique
+  
+  polarCustomerId String? @unique
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -88,8 +90,8 @@ model Organization {
 model Subscription {
   id String @id @default(cuid())
 
-  stripeSubscriptionId String @unique
-  stripePriceId        String
+  polarSubscriptionId String @unique
+  polarPriceId        String
 
   organizationId String       @unique
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -101,7 +103,7 @@ model Subscription {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  @@index([stripeSubscriptionId])
+  @@index([polarSubscriptionId])
   @@index([organizationId])
 }
 

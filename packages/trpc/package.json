@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@bullstudio/auth": "workspace:*",
+    "@bullstudio/billing": "workspace:*",
     "@bullstudio/connect-types": "workspace:*",
     "@bullstudio/dayjs": "workspace:*",
     "@bullstudio/prisma": "workspace:*",

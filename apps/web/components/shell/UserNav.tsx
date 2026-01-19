@@ -1,8 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useSession, signOut } from "@bullstudio/auth/react";
-import { LogOut, ChevronsUpDown, User } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@bullstudio/ui/components/avatar";
+import { LogOut, ChevronsUpDown, CreditCard } from "lucide-react";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@bullstudio/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,10 +23,12 @@ import {
   useSidebar,
 } from "@bullstudio/ui/components/sidebar";
 import { Skeleton } from "@bullstudio/ui/components/skeleton";
+import { useParams } from "next/navigation";
 
 export function UserNav() {
   const { data: session, status } = useSession();
   const { isMobile, state } = useSidebar();
+  const { organizationSlug: orgSlug } = useParams();
   const isCollapsed = state === "collapsed";
 
   if (status === "loading") {
@@ -57,16 +64,23 @@ export function UserNav() {
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              tooltip={isCollapsed ? user.name || user.email || "User" : undefined}
+              tooltip={
+                isCollapsed ? user.name || user.email || "User" : undefined
+              }
             >
               <Avatar className="size-8 rounded-lg">
-                <AvatarImage src={user.image || undefined} alt={user.name || "User"} />
+                <AvatarImage
+                  src={user.image || undefined}
+                  alt={user.name || "User"}
+                />
                 <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-medium">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name || "User"}</span>
+                <span className="truncate font-medium">
+                  {user.name || "User"}
+                </span>
                 <span className="truncate text-xs text-muted-foreground">
                   {user.email}
                 </span>
@@ -83,19 +97,31 @@ export function UserNav() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="size-8 rounded-lg">
-                  <AvatarImage src={user.image || undefined} alt={user.name || "User"} />
+                  <AvatarImage
+                    src={user.image || undefined}
+                    alt={user.name || "User"}
+                  />
                   <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-medium">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name || "User"}</span>
+                  <span className="truncate font-semibold">
+                    {user.name || "User"}
+                  </span>
                   <span className="truncate text-xs text-muted-foreground">
                     {user.email}
                   </span>
                 </div>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href={`/${orgSlug}/billing`}>
+                <CreditCard className="mr-2 size-4" />
+                Billing
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}

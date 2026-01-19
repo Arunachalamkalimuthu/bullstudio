@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import type { AuthedTRPCContext } from "../../types";
+import { alertAccessGuard } from "../../guards/billing";
 import type { CreateAlertInput } from "./alert.schema";
 
 type CreateAlertHandlerProps = {
@@ -38,6 +39,9 @@ export async function createAlertHandler({
       message: "You do not have access to this connection",
     });
   }
+
+  // Check billing limits - alerts may not be available on Free plan
+  await alertAccessGuard(connection.workspaceId);
 
   // Check for duplicate alert name on same queue
   const existingAlert = await prisma.alert.findFirst({

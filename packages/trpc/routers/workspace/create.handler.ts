@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { WorkspaceMemberRole } from "@bullstudio/prisma";
 import { AuthedTRPCContext } from "../../types";
 import { organizationGuard } from "../../guards/organization";
+import { workspaceLimitGuard } from "../../guards/billing";
 import { CreateWorkspaceInput } from "./create.schema";
 
 type CreateWorkspaceHandlerProps = {
@@ -19,6 +20,9 @@ export async function createWorkspaceHandler({
     ctx,
     organizationId: input.organizationId,
   });
+
+  // Check billing limits
+  await workspaceLimitGuard(input.organizationId);
 
   const existingWorkspace = await prisma.workspace.findUnique({
     where: {
