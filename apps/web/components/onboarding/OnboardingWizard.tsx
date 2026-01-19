@@ -19,7 +19,7 @@ export function OnboardingWizard() {
   const completeOnboarding = trpc.onboarding.complete.useMutation({
     onSuccess: (result) => {
       toast.success("Welcome to bullstudio!");
-      router.push(`/${result.workspace.slug}`);
+      router.push(`/${result.organization.slug}/${result.workspace.slug}`);
     },
     onError: (error) => {
       toast.error(error.message);
