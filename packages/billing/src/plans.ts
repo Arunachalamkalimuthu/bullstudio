@@ -38,7 +38,7 @@ export const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeatures> = {
   Pro: {
     name: "Pro",
     price: 39,
-    polarProductId: "1fdeb20f-a853-4a23-8463-2d685e01eabd",
+    polarProductId: "e2a7c495-d548-40d4-90e9-2e0bf7469dfb",
     description: "For growing teams with advanced needs",
     features: [
       "5 Workspaces",
@@ -51,7 +51,7 @@ export const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeatures> = {
   Enterprise: {
     name: "Enterprise",
     price: 99,
-    polarProductId: "2ce34776-ba89-4441-b9a9-f9a22f0c3be7",
+    polarProductId: "ac69ec18-a770-4352-9d7c-b28789de14be",
     description: "For large organizations",
     features: ["10 Workspaces", "10 Connections", "Everything in Pro"],
   },
@@ -65,9 +65,7 @@ export function getPlanFeatures(plan: SubscriptionPlan): PlanFeatures {
   return PLAN_FEATURES[plan];
 }
 
-export function getPlanByProductId(
-  productId: string
-): SubscriptionPlan | null {
+export function getPlanByProductId(productId: string): SubscriptionPlan | null {
   for (const [plan, features] of Object.entries(PLAN_FEATURES)) {
     if (features.polarProductId === productId) {
       return plan as SubscriptionPlan;
