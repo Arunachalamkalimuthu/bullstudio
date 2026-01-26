@@ -8,7 +8,7 @@ export const getPolarClient = () => {
   if (polar) return polar;
 
   const accessToken = process.env.POLAR_ACCESS_TOKEN;
-  if (!accessToken || !BILLING_ENABLED) {
+  if (!accessToken || !BILLING_ENABLED()) {
     return null;
   }
   polar = new Polar({
