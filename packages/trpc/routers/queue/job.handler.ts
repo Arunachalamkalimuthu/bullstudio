@@ -67,6 +67,7 @@ type GetJobHandlerProps = {
 };
 
 export async function getJobHandler({ ctx, input }: GetJobHandlerProps) {
+  //console.log("Getting job", input);
   const service = await getQueueService(ctx, input.connectionId);
   const job = await service.getJob(input.queueName, input.jobId);
 

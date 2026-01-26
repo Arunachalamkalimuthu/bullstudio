@@ -55,7 +55,7 @@ export function createEmailSenderWorker() {
     async (job: Job<EmailJobData>) => {
       const data = job.data;
       console.log(
-        `[EmailSender] Processing ${data.type} email for alert ${data.alertId}`
+        `[EmailSender] Processing ${data.type} email for alert ${data.alertId}`,
       );
 
       const isTriggered = data.type === "alert-triggered";
@@ -63,19 +63,22 @@ export function createEmailSenderWorker() {
       let result: Awaited<ReturnType<typeof sendAlertTriggeredEmail>>;
       if (isTriggered) {
         result = await sendAlertTriggeredEmail(data);
-        console.log(`[EmailSender] Email sent successfully: ${result.success}`);
-        return { sent: true };
+      } else {
+        result = await sendAlertResolvedEmail(data);
       }
 
-      result = await sendAlertResolvedEmail(data);
-      console.log(`[EmailSender] Email sent successfully: ${result.success}`);
+      if (!result.success) {
+        throw new Error(
+          `Failed to send email: ${result.error || "Unknown error"}`,
+        );
+      }
 
       return result;
     },
     {
       connection: redis,
       concurrency: 5,
-    }
+    },
   );
 
   worker.on("completed", (job: Job<EmailJobData>) => {

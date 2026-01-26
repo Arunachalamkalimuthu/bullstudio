@@ -9,13 +9,15 @@ import {
 } from "../queues/alert-check";
 import { emailQueue, type EmailJobData } from "../queues/email";
 import { evaluateAlert, type AlertConfig } from "../evaluators";
+import { defaultClient, MagicLinkEmail } from "@bullstudio/email";
+import { console } from "inspector";
 
 export function createAlertCheckerWorker() {
   const worker = new Worker<AlertCheckJobData>(
     ALERT_CHECK_QUEUE_NAME,
     async (job: Job<AlertCheckJobData>) => {
       console.log(
-        `[AlertChecker] Starting alert check at ${new Date().toISOString()}`
+        `[AlertChecker] Starting alert check at ${new Date().toISOString()}`,
       );
 
       const connectionManager = getConnectionManager(prisma);
@@ -46,18 +48,18 @@ export function createAlertCheckerWorker() {
           // Skip if connection is not connected
           if (alert.connection.status !== "Connected") {
             console.log(
-              `[AlertChecker] Skipping alert ${alert.id} - connection not connected`
+              `[AlertChecker] Skipping alert ${alert.id} - connection not connected`,
             );
             continue;
           }
 
           const service = await connectionManager.getConnection(
-            alert.connection.id
+            alert.connection.id,
           );
 
           if (!service) {
             console.log(
-              `[AlertChecker] Skipping alert ${alert.id} - service not available`
+              `[AlertChecker] Skipping alert ${alert.id} - service not available`,
             );
             continue;
           }
@@ -69,7 +71,7 @@ export function createAlertCheckerWorker() {
             config,
             alert.queueName,
             service,
-            alert.status
+            alert.status,
           );
 
           const statusChanged = result.status !== alert.status;
@@ -107,7 +109,7 @@ export function createAlertCheckerWorker() {
               alert.status,
               result.status,
               alert.lastTriggeredAt,
-              alert.cooldownMinutes
+              alert.cooldownMinutes,
             );
 
             if (shouldNotify && alert.recipients.length > 0) {
@@ -149,14 +151,14 @@ export function createAlertCheckerWorker() {
         } catch (error) {
           console.error(
             `[AlertChecker] Error evaluating alert ${alert.id}:`,
-            error
+            error,
           );
           errors++;
         }
       }
 
       console.log(
-        `[AlertChecker] Completed: ${processed} processed, ${triggered} triggered, ${resolved} resolved, ${errors} errors`
+        `[AlertChecker] Completed: ${processed} processed, ${triggered} triggered, ${resolved} resolved, ${errors} errors`,
       );
 
       return { processed, triggered, resolved, errors };
@@ -164,7 +166,7 @@ export function createAlertCheckerWorker() {
     {
       connection: redis,
       concurrency: 1,
-    }
+    },
   );
 
   worker.on("completed", (job: Job<AlertCheckJobData>) => {
@@ -175,7 +177,7 @@ export function createAlertCheckerWorker() {
     "failed",
     (job: Job<AlertCheckJobData> | undefined, error: Error) => {
       console.error(`[AlertChecker] Job ${job?.id} failed:`, error);
-    }
+    },
   );
 
   return worker;
@@ -185,7 +187,7 @@ function shouldSendNotification(
   previousStatus: AlertStatus,
   newStatus: AlertStatus,
   lastTriggeredAt: Date | null,
-  cooldownMinutes: number
+  cooldownMinutes: number,
 ): boolean {
   // Always notify on resolve
   if (newStatus === AlertStatus.OK) {

@@ -14,9 +14,6 @@ bullstudio consists of four core services:
 | **Postgres**| Primary database                     | 5432        |
 | **Redis**   | Queue backend & caching              | 6379        |
 
-<Frame caption="bullstudio architecture overview">
-  <img src="/images/architecture-overview.png" alt="bullstudio architecture" />
-</Frame>
 
 ## Prerequisites
 
@@ -28,7 +25,7 @@ bullstudio consists of four core services:
 ## 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-org/bullstudio.git
+git clone https://github.com/emirce/bullstudio.git
 cd bullstudio
 pnpm install
 ```
@@ -64,8 +61,6 @@ cp .env.example .env
 | `AUTH_GOOGLE_SECRET` | No | Google OAuth client secret |
 | `AUTH_GITHUB_ID` | No | GitHub OAuth client ID |
 | `AUTH_GITHUB_SECRET` | No | GitHub OAuth client secret |
-| `POLAR_ACCESS_TOKEN` | No | Polar billing token (optional for dev) |
-| `POLAR_WEBHOOK_SECRET` | No | Polar webhook secret (optional for dev) |
 
 **Minimal `.env` for local development:**
 
@@ -76,6 +71,10 @@ AUTH_SECRET="your-random-secret-here"
 ENCRYPTION_KEY="your-64-char-hex-key-here"
 RESEND_API_KEY="re_your_resend_key"
 ```
+
+Hint:
+- Use `openssl rand -base64 32` to generate `AUTH_SECRET`
+- Use `openssl rand -hex 32` to generate `ENCRYPTION_KEY`
 
 ## 4. Prisma Setup
 
@@ -104,8 +103,7 @@ This starts the web app at [http://localhost:3000](http://localhost:3000) with h
 To run workers separately:
 
 ```bash
-cd apps/workers
-pnpm dev
+pnpm dev -F workers
 ```
 
 ## Resend Setup

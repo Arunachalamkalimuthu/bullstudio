@@ -1,10 +1,10 @@
+import * as React from "react";
 import { Resend } from "resend";
-import type { JSX } from "react";
 
 type SendEmailOptions<P> = {
   to: string | string[];
   subject: string;
-  template: (props: P) => JSX.Element;
+  template: (props: P) => React.JSX.Element;
   props: P;
   from?: string;
   replyTo?: string | string[];
@@ -96,7 +96,9 @@ export function createEmailClient(config: EmailClientConfig) {
      * Send a batch of emails. Useful for sending to multiple recipients
      * with different props.
      */
-    async sendBatch<P>(emails: Array<SendEmailOptions<P>>): Promise<SendEmailResult[]> {
+    async sendBatch<P>(
+      emails: Array<SendEmailOptions<P>>,
+    ): Promise<SendEmailResult[]> {
       return Promise.all(emails.map((email) => this.send(email)));
     },
   };

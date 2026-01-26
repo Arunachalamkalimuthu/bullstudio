@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   Body,
   Container,
@@ -7,11 +8,10 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type { ReactNode } from "react";
 
 type EmailLayoutProps = {
   preview: string;
-  children: ReactNode;
+  children: React.ReactNode;
 };
 
 export function EmailLayout({ preview, children }: EmailLayoutProps) {

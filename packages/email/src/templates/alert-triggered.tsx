@@ -1,4 +1,12 @@
-import { Button, Heading, Hr, Row, Column, Text } from "@react-email/components";
+import * as React from "react";
+import {
+  Button,
+  Heading,
+  Hr,
+  Row,
+  Column,
+  Text,
+} from "@react-email/components";
 import { EmailLayout } from "./components/layout";
 
 export type AlertType =

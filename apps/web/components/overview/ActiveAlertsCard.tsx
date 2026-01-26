@@ -14,6 +14,7 @@ import dayjs from "@bullstudio/dayjs";
 import Link from "next/link";
 import { useWorkspaceContext } from "@/components/providers/WorkspaceProvider";
 import { trpc } from "@/lib/trpc";
+import { useOrganizationContext } from "../providers/OrganizationProvider";
 
 const ALERT_TYPE_LABELS: Record<AlertType, string> = {
   [AlertType.FailureRate]: "Failure Rate",
@@ -45,13 +46,14 @@ export function AlertsActivityCard({
   timeRangeHours,
 }: AlertsActivityCardProps) {
   const { workspaceId, workspaceSlug } = useWorkspaceContext();
+  const { orgSlug } = useOrganizationContext();
 
   const { data: alerts } = trpc.alert.list.useQuery(
     {
       workspaceId,
       connectionId,
     },
-    { refetchInterval: 30000 }
+    { refetchInterval: 30000 },
   );
 
   const alertActivity = useMemo(() => {
@@ -95,15 +97,15 @@ export function AlertsActivityCard({
     }
 
     return activity.sort(
-      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
     );
   }, [alerts, timeRangeHours]);
 
   const triggeredCount = alertActivity.filter(
-    (a) => a.status === "triggered"
+    (a) => a.status === "triggered",
   ).length;
   const resolvedCount = alertActivity.filter(
-    (a) => a.status === "resolved"
+    (a) => a.status === "resolved",
   ).length;
 
   if (alertActivity.length === 0) {
@@ -138,7 +140,7 @@ export function AlertsActivityCard({
               </span>
             )}
           </CardTitle>
-          <Link href={`/${workspaceSlug}/alerts`}>
+          <Link href={`/${orgSlug}/${workspaceSlug}/alerts`}>
             <Button
               variant="ghost"
               size="sm"

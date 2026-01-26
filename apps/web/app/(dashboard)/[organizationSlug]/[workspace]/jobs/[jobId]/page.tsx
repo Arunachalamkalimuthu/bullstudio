@@ -8,7 +8,6 @@ type JobDetailPageProps = {
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const { workspace, jobId } = await params;
-
   return (
     <div className="flex flex-col h-full">
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -18,7 +17,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
       </header>
 
       <main className="flex-1 min-h-0 overflow-auto p-6">
-        <JobDetail workspace={workspace} jobId={jobId} />
+        <JobDetail workspace={workspace} jobId={decodeURIComponent(jobId)} />
       </main>
     </div>
   );
