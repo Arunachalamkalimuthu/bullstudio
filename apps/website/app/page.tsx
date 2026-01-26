@@ -96,7 +96,7 @@ function Navbar() {
               Log in
             </Link>
             <Link
-              href={`${config.appUrl}/signup`}
+              href={`${config.appUrl}/login`}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-all hover:shadow-md"
             >
               Get Started
@@ -282,7 +282,7 @@ function ProblemSection() {
               <div
                 className={cn(
                   "inline-flex items-center justify-center size-12 rounded-xl bg-destructive/10 mb-4",
-                  problem.color
+                  problem.color,
                 )}
               >
                 {problem.icon}
@@ -383,7 +383,7 @@ function FeaturesSection() {
               <div
                 className={cn(
                   "inline-flex items-center justify-center size-12 rounded-xl mb-4",
-                  feature.color
+                  feature.color,
                 )}
               >
                 {feature.icon}
@@ -434,7 +434,8 @@ REDIS_URL=redis://localhost:6379`,
             Up and running in <span className="text-gradient">2 minutes</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            No SDK to install. No agents to deploy. Just connect your Redis and go.
+            No SDK to install. No agents to deploy. Just connect your Redis and
+            go.
           </p>
         </div>
 
@@ -577,11 +578,7 @@ function PricingSection() {
       description: "For large organizations",
       price: "$99",
       priceDetail: "/month",
-      features: [
-        "10 Workspaces",
-        "10 Connections",
-        "Everything in Pro",
-      ],
+      features: ["10 Workspaces", "10 Connections", "Everything in Pro"],
       cta: "Get Started",
       ctaVariant: "outline" as const,
       popular: false,
@@ -611,7 +608,7 @@ function PricingSection() {
                 "relative rounded-2xl border p-8 transition-all",
                 tier.popular
                   ? "border-primary bg-card shadow-xl shadow-primary/10 scale-105"
-                  : "border-border/50 bg-card/50 hover:border-border hover:bg-card/80"
+                  : "border-border/50 bg-card/50 hover:border-border hover:bg-card/80",
               )}
             >
               {tier.popular && (
@@ -652,7 +649,7 @@ function PricingSection() {
                   "w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all",
                   tier.ctaVariant === "primary"
                     ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-                    : "border border-border bg-card hover:bg-accent hover:text-accent-foreground"
+                    : "border border-border bg-card hover:bg-accent hover:text-accent-foreground",
                 )}
               >
                 {tier.cta}
@@ -739,7 +736,6 @@ function OpenSourceSection() {
                   <span>More</span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -770,7 +766,7 @@ function ContributionGraph() {
                 ? "bg-primary/50"
                 : level === 1
                   ? "bg-primary/20"
-                  : "bg-muted"
+                  : "bg-muted",
           )}
         />
       ))}
@@ -1012,7 +1008,7 @@ function DashboardMockup() {
                     ? "text-emerald-500"
                     : stat.change.startsWith("-")
                       ? "text-red-500"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                 )}
               >
                 {stat.change}
@@ -1085,7 +1081,7 @@ function DetailedDashboardMockup() {
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
                 item.active
                   ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
               )}
             >
               {item.icon}
@@ -1139,7 +1135,7 @@ function DetailedDashboardMockup() {
                       "size-2 rounded-full",
                       queue.status === "healthy"
                         ? "bg-emerald-500"
-                        : "bg-yellow-500"
+                        : "bg-yellow-500",
                     )}
                   />
                   <span className="text-sm font-mono">{queue.name}</span>
