@@ -9,7 +9,6 @@ import {
 } from "../queues/alert-check";
 import { emailQueue, type EmailJobData } from "../queues/email";
 import { evaluateAlert, type AlertConfig } from "../evaluators";
-import { defaultClient, MagicLinkEmail } from "@bullstudio/email";
 import { console } from "inspector";
 
 export function createAlertCheckerWorker() {

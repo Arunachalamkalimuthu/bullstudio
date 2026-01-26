@@ -24,8 +24,8 @@ export type EmailJobData = {
 export const emailQueue = new Queue<EmailJobData>(EMAIL_QUEUE_NAME, {
   connection: redis,
   defaultJobOptions: {
-    removeOnComplete: { count: 500 },
-    removeOnFail: { count: 500 },
+    removeOnComplete: { count: 1000, age: 604800 }, // 1 week
+    removeOnFail: { count: 500, age: 604800 }, // 1 week
     attempts: 3,
     backoff: {
       type: "exponential",
