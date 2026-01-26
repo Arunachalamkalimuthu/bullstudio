@@ -10,7 +10,7 @@
     <br />
     <a href="https://bullstudio.dev">Website</a>
     <a href="https://docs.bullstudio.dev">Docs</a>
-    <a href="https://discord.gg/sXaqhfhH">Discord</a>
+    <a href="https://discord.gg/RWhrk4aXze">Discord</a>
   </p>
 </p>
 
