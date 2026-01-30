@@ -21,25 +21,26 @@ async function getFlowProducer(): Promise<FlowProducer> {
   return flowProducer;
 }
 
-function countFlowStats(tree: JobNode): {
+async function countFlowStats(tree: JobNode): Promise<{
   total: number;
   completed: number;
   failed: number;
-} {
+}> {
   let total = 1;
   let completed = 0;
   let failed = 0;
 
   const job = tree.job;
-  if (job.finishedOn && !job.failedReason) {
+  const state= await job.getState();
+  if (state === "completed") {
     completed = 1;
-  } else if (job.failedReason) {
+  } else if (state === "failed") {
     failed = 1;
   }
 
   if (tree.children) {
     for (const child of tree.children) {
-      const childStats = countFlowStats(child);
+      const childStats = await countFlowStats(child);
       total += childStats.total;
       completed += childStats.completed;
       failed += childStats.failed;
@@ -92,7 +93,7 @@ export const flowRouter = {
         const jobs = await provider.getJobs(queue.name, { limit: 500 });
 
         const potentialRoots = jobs.filter(
-          (job) => !job.parentId && job.status !== "completed" && job.status !== "failed"
+          (job) => !job.parentId
         );
 
         for (const job of potentialRoots) {
@@ -109,7 +110,7 @@ export const flowRouter = {
             });
 
             if (flowTree?.children && flowTree.children.length > 0) {
-              const stats = countFlowStats(flowTree);
+              const stats = await countFlowStats(flowTree);
               const state = await flowTree.job.getState();
 
               flows.push({
@@ -154,7 +155,7 @@ export const flowRouter = {
             });
 
             if (flowTree?.children && flowTree.children.length > 0) {
-              const stats = countFlowStats(flowTree);
+              const stats = await countFlowStats(flowTree);
 
               flows.push({
                 id: job.id,
@@ -194,8 +195,9 @@ export const flowRouter = {
           });
         }
 
+
         const root = await convertFlowTree(flowTree);
-        const stats = countFlowStats(flowTree);
+        const stats = await countFlowStats(flowTree);
 
         return {
           id: input.flowId,

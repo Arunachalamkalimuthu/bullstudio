@@ -18,7 +18,7 @@ import {
 import { AppSidebar } from "@/components/Sidebar";
 import { Toaster } from "sonner";
 
-import "@bullstudio/ui/globals.css";
+import "../styles.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 interface MyRouterContext {

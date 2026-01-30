@@ -125,7 +125,7 @@ export function AppSidebar() {
             v0.0.1
           </span>
           <a
-            href="https://github.com/your-repo/bullstudio"
+            href="https://github.com/emirce/bullstudio"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-zinc-300 transition-colors"

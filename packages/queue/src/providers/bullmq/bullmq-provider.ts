@@ -187,9 +187,9 @@ export class BullMqProvider implements QueueService {
     const statuses = this.resolveStatuses(filter?.status);
     const jobs = await queue.getJobs(statuses, offset, offset + limit - 1);
 
-    let mappedJobs = jobs
+    let mappedJobs = await Promise.all(jobs
       .filter((job): job is BullJob => job !== undefined)
-      .map((job) => this.mapJob(job, queueName));
+      .map(async (job) => this.mapJob(job, await job.getState(), queueName)));
 
     if (filter?.name) {
       mappedJobs = mappedJobs.filter((job) => job.name === filter.name);
@@ -205,12 +205,12 @@ export class BullMqProvider implements QueueService {
   async getJob(queueName: string, jobId: string): Promise<Job | null> {
     const queue = this.getOrCreateQueue(queueName);
     const job = await queue.getJob(jobId);
-
     if (!job) {
       return null;
     }
 
-    return this.mapJob(job, queueName);
+    const state = await job.getState();
+    return this.mapJob(job, state, queueName);
   }
 
   async retryJob(queueName: string, jobId: string): Promise<void> {
@@ -317,13 +317,13 @@ export class BullMqProvider implements QueueService {
     )[];
   }
 
-  private mapJob(job: BullJob, queueName: string): Job {
+  private mapJob(job: BullJob, state: string, queueName: string): Job {
     return {
       id: job.id ?? "",
       name: job.name,
       queueName,
       data: job.data,
-      status: this.mapJobState(job),
+      status: state as JobStatus,
       progress: this.normalizeProgress(job.progress),
       attemptsMade: job.attemptsMade,
       attemptsLimit: job.opts?.attempts ?? 1,

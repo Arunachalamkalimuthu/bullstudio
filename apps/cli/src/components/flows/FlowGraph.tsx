@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import {
   ReactFlow,
   Background,
@@ -128,14 +128,15 @@ function getLayoutedElements(
   return { nodes: layoutedNodes, edges };
 }
 
+
 export function FlowGraph({ root, onNodeClick }: FlowGraphProps) {
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const { nodes, edges } = buildNodesAndEdges(root);
     return getLayoutedElements(nodes, edges);
   }, [root]);
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes , onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges , onEdgesChange] = useEdgesState(initialEdges);
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -144,6 +145,13 @@ export function FlowGraph({ root, onNodeClick }: FlowGraphProps) {
     },
     [onNodeClick]
   );
+
+  useEffect(() => {
+    const { nodes, edges } = buildNodesAndEdges(root);
+    const { nodes: layoutedNodes, edges: layoutedEdges } =  getLayoutedElements(nodes, edges);
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  }, [root, setNodes, setEdges]); 
 
   return (
     <div className="h-[600px] rounded-lg border border-zinc-800 bg-zinc-950 overflow-hidden">

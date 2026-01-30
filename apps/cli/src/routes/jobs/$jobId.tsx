@@ -166,7 +166,10 @@ function JobDetailPage() {
         <Button variant="ghost" size="icon" onClick={goBack}>
           <ArrowLeft className="size-4" />
         </Button>
-        <Header title={job.name} />
+        <div>
+          <Header title={job.name} />
+          <p className="text-xs text-zinc-500 font-mono pl-4 -mt-2">{job.id}</p>
+        </div>
       </div>
 
       {/* Action Bar */}
