@@ -1,29 +1,45 @@
 {
   "name": "bullstudio",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "A lightweight queue management dashboard for BullMQ",
   "private": false,
   "type": "module",
   "bin": {
     "bullstudio": "./dist/bin/cli.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "bullmq",
+    "bull",
+    "queue",
+    "redis",
+    "dashboard",
+    "cli",
+    "monitoring",
+    "jobs"
+  ],
+  "readme": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emirce/bullstudio"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && cp -r public/. dist/client/ && pnpm build:server && pnpm build:cli",
-    "build:server": "esbuild server/production.ts --bundle --platform=node --target=node18 --outfile=dist/server/production.js --format=esm --packages=external",
+    "build:server": "esbuild server/production.ts --bundle --platform=node --target=node18 --outfile=dist/server/production.js --format=esm --external:bullmq --external:ioredis --external:open",
     "build:cli": "esbuild bin/cli.ts --bundle --platform=node --target=node18 --outfile=dist/bin/cli.js --format=esm --external:open",
     "preview": "vite preview",
     "start": "node dist/bin/cli.js",
     "test": "vitest run",
     "format": "biome format",
     "lint": "biome lint",
-    "check": "biome check"
+    "check": "biome check",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@bullstudio/connect-types": "workspace:*",
-    "@bullstudio/dayjs": "workspace:*",
-    "@bullstudio/queue": "workspace:*",
-    "@bullstudio/ui": "workspace:*",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-query": "^5.66.5",

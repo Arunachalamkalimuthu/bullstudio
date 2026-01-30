@@ -20,7 +20,13 @@ const config = defineConfig({
   },
   ssr: {
     // These packages will be bundled instead of externalized
-    noExternal: ["@bullstudio/ui", /^@radix-ui\//],
+    noExternal: [
+      "@bullstudio/ui",
+      "@bullstudio/connect-types",
+      "@bullstudio/dayjs",
+      "@bullstudio/queue",
+      /^@radix-ui\//,
+    ],
     // External packages for SSR - use native require
     external: ["react", "react-dom"],
     // Allow CJS modules in SSR
