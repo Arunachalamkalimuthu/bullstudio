@@ -21,6 +21,8 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 
 COPY --from=builder --chown=bullstudio:nodejs /app/apps/cli/dist/ ./apps/cli/dist/
+COPY --from=builder --chown=bullstudio:nodejs /app/node_modules/ ./node_modules/
+COPY --from=builder --chown=bullstudio:nodejs /app/apps/cli/node_modules/ ./apps/cli/node_modules/
 
 ARG PORT=4000
 
