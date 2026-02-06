@@ -40,18 +40,6 @@ importers:
 
   apps/cli:
     dependencies:
-      '@bullstudio/connect-types':
-        specifier: workspace:*
-        version: link:../../packages/connect-types
-      '@bullstudio/dayjs':
-        specifier: workspace:*
-        version: link:../../packages/dayjs
-      '@bullstudio/queue':
-        specifier: workspace:*
-        version: link:../../packages/queue
-      '@bullstudio/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@tailwindcss/vite':
         specifier: ^4.0.6
         version: 4.1.18(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))
@@ -146,6 +134,18 @@ importers:
       '@biomejs/biome':
         specifier: 2.2.4
         version: 2.2.4
+      '@bullstudio/connect-types':
+        specifier: workspace:*
+        version: link:../../packages/connect-types
+      '@bullstudio/dayjs':
+        specifier: workspace:*
+        version: link:../../packages/dayjs
+      '@bullstudio/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@bullstudio/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/devtools-vite':
         specifier: ^0.3.11
         version: 0.3.12(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))

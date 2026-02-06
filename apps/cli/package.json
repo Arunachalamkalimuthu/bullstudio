@@ -1,6 +1,6 @@
 {
   "name": "bullstudio",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight queue management dashboard for Bull and BullMQ",
   "private": false,
   "type": "module",
@@ -41,10 +41,6 @@
     "generate:bull-jobs": "npx tsx scripts/generate-bull-jobs.ts"
   },
   "dependencies": {
-    "@bullstudio/connect-types": "workspace:*",
-    "@bullstudio/dayjs": "workspace:*",
-    "@bullstudio/queue": "workspace:*",
-    "@bullstudio/ui": "workspace:*",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-query": "^5.66.5",
@@ -77,6 +73,10 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@bullstudio/connect-types": "workspace:*",
+    "@bullstudio/dayjs": "workspace:*",
+    "@bullstudio/queue": "workspace:*",
+    "@bullstudio/ui": "workspace:*",
     "@biomejs/biome": "2.2.4",
     "bull": "^4.16.4",
     "@tanstack/devtools-vite": "^0.3.11",
