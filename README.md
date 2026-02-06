@@ -5,7 +5,7 @@
 <h1 align="center">bullstudio</h1>
 
 <p align="center">
-  A lightweight, beautiful queue management dashboard for <a href="https://docs.bullmq.io/">BullMQ</a>.<br/>
+  A lightweight, beautiful queue management dashboard for <a href="https://github.com/OptimalBits/bull">Bull</a> and <a href="https://docs.bullmq.io/">BullMQ</a>.<br/>
   Monitor your queues, inspect jobs, visualize flows, and manage your Redis-backed job infrastructure.
 </p>
 
@@ -13,6 +13,7 @@
   <a href="https://hub.docker.com/r/emirce/bullstudio"><img src="https://img.shields.io/docker/v/emirce/bullstudio?sort=semver&label=Docker%20Hub" alt="Docker Hub" /></a>
   <a href="https://hub.docker.com/r/emirce/bullstudio"><img src="https://img.shields.io/docker/pulls/emirce/bullstudio" alt="Docker Pulls" /></a>
   <img src="https://img.shields.io/badge/BullMQ-5.x-orange" alt="BullMQ" />
+  <img src="https://img.shields.io/badge/Bullx-4.x-orange" alt="Bull" />
   <img src="https://img.shields.io/badge/React-19-blue" alt="React" />
   <img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript" />
 </p>
@@ -31,7 +32,7 @@
 npx bullstudio -r <redis_url>
 ```
 
-That's it! The dashboard opens automatically at [http://localhost:4000](http://localhost:4000). No code integration needed.
+That's it! The dashboard opens automatically at [http://localhost:4000](http://localhost:4000). No code integration needed. Bullstudio automatically detects your provider (Bull or BullMq).
 
 ---
 
