@@ -1,6 +1,7 @@
 {
   "name": "bullstudio-app",
   "version": "0.0.8",
+  "private": true,
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
