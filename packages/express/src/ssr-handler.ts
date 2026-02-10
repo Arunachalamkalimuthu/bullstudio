@@ -1,35 +1,13 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import type { RequestHandler } from "express";
+import type { RequestHandler, Response as ExpressResponse } from "express";
 import { toFetchRequest } from "./utils.js";
 
 interface ServerModule {
   fetch: (request: Request) => Promise<Response>;
 }
 
-/**
- * Rewrite HTML to support mounting at a sub-path:
- * 1. Inject a script that sets window.__BULLSTUDIO_BASE_PATH__
- * 2. Rewrite src="/assets/..." to src="/basePath/assets/..."
- * 3. Rewrite href="/assets/..." to href="/basePath/assets/..."
- * 4. Rewrite href="/logo.svg" to href="/basePath/logo.svg"
- */
-function rewriteHtml(html: string, basePath: string): string {
-  if (!basePath || basePath === "/") return html;
-
-  const basePathScript = `<script>window.__BULLSTUDIO_BASE_PATH__="${basePath}"</script>`;
-
-  // Inject the base path script right after <head> or before </head>
-  let result = html.replace("<head>", `<head>${basePathScript}`);
-
-  // Rewrite asset paths in src and href attributes
-  result = result.replace(
-    /(\s(?:src|href))="\/(?!\/)/g,
-    `$1="${basePath}/`,
-  );
-
-  return result;
-}
+const SKIPPED_HEADERS = new Set(["content-length", "content-encoding"]);
 
 /**
  * Create an SSR handler that delegates to TanStack Start's fetch handler.
@@ -52,58 +30,92 @@ export function createSsrHandler(
 
   return async (req, res, next) => {
     try {
-      const handler = await getServerModule();
+      const server = await getServerModule();
       const fetchRequest = await toFetchRequest(req);
-      const response = await handler.fetch(fetchRequest);
+      const response = await server.fetch(fetchRequest);
 
-      // Set status and headers
-      res.status(response.status);
-      response.headers.forEach((value, key) => {
-        // Skip content-length/content-encoding since we may modify the body
-        if (
-          key.toLowerCase() === "content-length" ||
-          key.toLowerCase() === "content-encoding"
-        ) {
-          return;
-        }
-        res.setHeader(key, value);
-      });
+      copyResponseHeaders(response, res);
 
-      const contentType = response.headers.get("content-type") ?? "";
-      const isHtml = contentType.includes("text/html");
-
-      if (isHtml && response.body) {
-        // Collect the full HTML body so we can rewrite it
-        const reader = response.body.getReader();
-        const chunks: Uint8Array[] = [];
-        let done = false;
-        while (!done) {
-          const result = await reader.read();
-          done = result.done;
-          if (result.value) chunks.push(result.value);
-        }
-        const html = Buffer.concat(chunks).toString("utf-8");
-        const rewritten = rewriteHtml(html, basePath);
-        res.setHeader("Content-Length", Buffer.byteLength(rewritten));
-        res.end(rewritten);
-      } else if (response.body) {
-        // Stream non-HTML responses directly
-        const reader = response.body.getReader();
-        const pump = async (): Promise<void> => {
-          const { done, value } = await reader.read();
-          if (done) {
-            res.end();
-            return;
-          }
-          res.write(value);
-          return pump();
-        };
-        await pump();
-      } else {
+      if (!response.body) {
         res.end();
+        return;
+      }
+
+      const isHtml = (response.headers.get("content-type") ?? "").includes(
+        "text/html",
+      );
+
+      if (isHtml) {
+        await sendRewrittenHtml(response.body, basePath, res);
+      } else {
+        await streamBody(response.body, res);
       }
     } catch (error) {
       next(error);
     }
   };
+}
+
+function copyResponseHeaders(
+  response: Response,
+  res: ExpressResponse,
+): void {
+  res.status(response.status);
+  response.headers.forEach((value, key) => {
+    if (!SKIPPED_HEADERS.has(key.toLowerCase())) {
+      res.setHeader(key, value);
+    }
+  });
+}
+
+async function sendRewrittenHtml(
+  body: ReadableStream<Uint8Array>,
+  basePath: string,
+  res: ExpressResponse,
+): Promise<void> {
+  const html = (await readStream(body)).toString("utf-8");
+  const rewritten = rewriteHtml(html, basePath);
+  res.setHeader("Content-Length", Buffer.byteLength(rewritten));
+  res.end(rewritten);
+}
+
+async function streamBody(
+  body: ReadableStream<Uint8Array>,
+  res: ExpressResponse,
+): Promise<void> {
+  const reader = body.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    res.write(value);
+  }
+  res.end();
+}
+
+async function readStream(
+  body: ReadableStream<Uint8Array>,
+): Promise<Buffer> {
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks);
+}
+
+/**
+ * Rewrite HTML to support mounting at a sub-path:
+ * 1. Inject a script that sets window.__BULLSTUDIO_BASE_PATH__
+ * 2. Rewrite src="/..." and href="/..." to include the base path
+ */
+function rewriteHtml(html: string, basePath: string): string {
+  if (!basePath || basePath === "/") return html;
+
+  const basePathScript = `<script>window.__BULLSTUDIO_BASE_PATH__="${basePath}"</script>`;
+
+  return html
+    .replace("<head>", `<head>${basePathScript}`)
+    .replace(/(\s(?:src|href))="\/(?!\/)/g, `$1="${basePath}/`);
 }

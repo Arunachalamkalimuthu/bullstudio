@@ -7,9 +7,15 @@ import type { Request as ExpressRequest } from "express";
  * Uses createRequire so it works regardless of the consumer's module system.
  */
 export function resolveBullStudioDist(): string {
-  const require = createRequire(__filename);
-  const bullstudioPkg = require.resolve("bullstudio/package.json");
-  return join(bullstudioPkg, "..", "dist");
+  try {
+    const require = createRequire(__filename);
+    const bullstudioPkg = require.resolve("bullstudio/package.json");
+    return join(bullstudioPkg, "..", "dist");
+  } catch {
+    throw new Error(
+      'Could not resolve "bullstudio" package. Make sure it is installed as a dependency.',
+    );
+  }
 }
 
 /**
@@ -26,30 +32,32 @@ export async function toFetchRequest(
 
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {
-    if (value) {
-      if (Array.isArray(value)) {
-        for (const v of value) {
-          headers.append(key, v);
-        }
-      } else {
-        headers.set(key, value);
-      }
+    if (!value) continue;
+    if (Array.isArray(value)) {
+      for (const v of value) headers.append(key, v);
+    } else {
+      headers.set(key, value);
     }
   }
 
-  let body: BodyInit | undefined;
+  let body: ArrayBuffer | undefined;
   if (req.method !== "GET" && req.method !== "HEAD") {
-    const buf = await new Promise<Buffer>((resolve) => {
-      const chunks: Buffer[] = [];
-      req.on("data", (chunk: Buffer) => chunks.push(chunk));
-      req.on("end", () => resolve(Buffer.concat(chunks)));
-    });
-    body = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+    body = await readBody(req);
   }
 
-  return new Request(url, {
-    method: req.method,
-    headers,
-    body,
+  return new Request(url, { method: req.method, headers, body });
+}
+
+function readBody(req: ExpressRequest): Promise<ArrayBuffer> {
+  return new Promise<ArrayBuffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk: Buffer) => chunks.push(chunk));
+    req.on("error", reject);
+    req.on("end", () => {
+      const buf = Buffer.concat(chunks);
+      resolve(
+        buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+      );
+    });
   });
 }
