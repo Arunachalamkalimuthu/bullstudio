@@ -28,14 +28,13 @@ export function createSsrHandler(
   basePath: string,
 ): RequestHandler {
   const serverFile = join(distDir, "server", "server.js");
-  let serverModule: ServerModule | null = null;
+  let modulePromise: Promise<ServerModule> | null = null;
 
-  async function getServerModule(): Promise<ServerModule> {
-    if (!serverModule) {
-      const mod = await importEsm(pathToFileURL(serverFile).href);
-      serverModule = mod.default || mod;
-    }
-    return serverModule!;
+  function getServerModule(): Promise<ServerModule> {
+    modulePromise ??= importEsm(pathToFileURL(serverFile).href).then(
+      (mod) => mod.default || mod,
+    );
+    return modulePromise;
   }
 
   return async (req, res, next) => {
@@ -121,9 +120,13 @@ async function readStream(
  * 2. Rewrite src="/..." and href="/..." to include the base path
  */
 function rewriteHtml(html: string, basePath: string): string {
-  if (!basePath || basePath === "/") return html;
+  if (!basePath) return html;
 
-  const basePathScript = `<script>window.__BULLSTUDIO_BASE_PATH__="${basePath}"</script>`;
+  const escaped = basePath
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/<\//g, "<\\/");
+  const basePathScript = `<script>window.__BULLSTUDIO_BASE_PATH__="${escaped}"</script>`;
 
   return html
     .replace("<head>", `<head>${basePathScript}`)

@@ -18,18 +18,17 @@ import { createSsrHandler } from "./ssr-handler.js";
  * ```
  */
 export function createBullStudio(options: BullStudioOptions): Router {
-  setEnvironment(options);
-
   const distDir = resolveBullStudioDist();
   const router = Router();
 
   router.use(createStaticHandler(distDir));
-  router.use(createLazySsrHandler(distDir));
+  router.use(createLazySsrHandler(distDir, options));
 
   return router;
 }
 
 function setEnvironment(options: BullStudioOptions): void {
+  warnIfOverwriting("REDIS_URL", options.redisUrl);
   process.env.REDIS_URL = options.redisUrl;
 
   if (options.auth) {
@@ -38,17 +37,30 @@ function setEnvironment(options: BullStudioOptions): void {
   }
 }
 
+function warnIfOverwriting(key: string, newValue: string): void {
+  const current = process.env[key];
+  if (current && current !== newValue) {
+    console.warn(
+      `[bullstudio] Overwriting process.env.${key}. Multiple createBullStudio() calls with different values are not supported.`,
+    );
+  }
+}
+
 /**
  * Wraps the SSR handler so it's created once after the base path
  * is resolved from the first incoming request.
+ * Environment variables are also deferred to avoid eager Redis connections.
  */
-function createLazySsrHandler(distDir: string): RequestHandler {
-  let handler: RequestHandler | undefined;
+function createLazySsrHandler(
+  distDir: string,
+  options: BullStudioOptions,
+): RequestHandler {
+  let handler: RequestHandler | null = null;
 
   return (req, res, next) => {
     if (!handler) {
-      const basePath = normalizeBasePath(req.baseUrl);
-      handler = createSsrHandler(distDir, basePath);
+      setEnvironment(options);
+      handler = createSsrHandler(distDir, normalizeBasePath(req.baseUrl));
     }
     handler(req, res, next);
   };
