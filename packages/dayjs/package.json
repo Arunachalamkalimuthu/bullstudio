@@ -1,14 +1,14 @@
 {
   "name": "@bullstudio/dayjs",
   "version": "1.0.0",
-  "description": "Day.js for Bull Studio",
-  "author": "Bull Studio",
-  "license": "MIT",
+  "private": true,
+  "type": "module",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
     ".": "./index.ts"
   },
+  "license": "MIT",
   "dependencies": {
     "dayjs": "^1.11.19"
   }

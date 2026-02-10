@@ -18,50 +18,17 @@
 
 ---
 
-
 <div align="center">
 <img width="80%" src="https://github.com/user-attachments/assets/b5eea348-5919-40ff-ad55-3a0387dbec47" />
 </div>
 
-
 ## Quick Start
 
-```bash
-npx bullstudio-app -r <redis_url>
-```
-
-That's it! The dashboard opens automatically at [http://localhost:4000](http://localhost:4000). No code integration needed. bullstudio automatically detects your provider (Bull or BullMQ).
-
----
-
-## Installation
-
-### Run directly with npx (recommended)
+### Embed in your backend (recommended)
 
 ```bash
-npx bullstudio-app
+npm install bullstudio-express bullstudio
 ```
-
-### Or install globally
-
-```bash
-npm install -g bullstudio-app
-bullstudio-app
-```
-
----
-
-## Instrument Your App
-
-Embed the bullstudio dashboard directly into your existing Express or NestJS application using the `bullstudio-express` adapter. No separate process needed.
-
-### Installation
-
-```bash
-npm install bullstudio-express bullstudio-app
-```
-
-### Express
 
 ```typescript
 import express from "express";
@@ -81,11 +48,50 @@ app.listen(3000, () => {
 });
 ```
 
-### NestJS (via Express adapter)
+Navigate to `/queues` and the full dashboard renders with your Redis configuration. bullstudio automatically detects your queue provider (Bull or BullMQ).
+
+### Run standalone
+
+```bash
+npx bullstudio -r <redis_url>
+```
+
+Opens automatically at [http://localhost:4000](http://localhost:4000).
+
+---
+
+## Express Adapter
+
+Mount bullstudio as middleware in your Express or NestJS app. The dashboard renders at your chosen path with full SSR — no separate process needed.
+
+### Installation
+
+```bash
+npm install bullstudio-express bullstudio
+```
+
+### Express
+
+```typescript
+import express from "express";
+import { createBullStudio } from "bullstudio-express";
+
+const app = express();
+
+app.use(
+  "/queues",
+  createBullStudio({
+    redisUrl: "redis://localhost:6379",
+  })
+);
+
+app.listen(3000);
+```
+
+### NestJS
 
 ```typescript
 import { NestFactory } from "@nestjs/core";
-import { ExpressAdapter } from "@nestjs/platform-express";
 import { createBullStudio } from "bullstudio-express";
 import { AppModule } from "./app.module";
 
@@ -121,123 +127,43 @@ app.use(
 
 ### Options
 
-| Option              | Type     | Description                          | Required |
-| ------------------- | -------- | ------------------------------------ | -------- |
-| `redisUrl`          | `string` | Redis connection URL                 | Yes      |
-| `auth.username`     | `string` | Username for HTTP Basic Auth         | No       |
-| `auth.password`     | `string` | Password for HTTP Basic Auth         | No       |
+| Option          | Type     | Description                  | Required |
+| --------------- | -------- | ---------------------------- | -------- |
+| `redisUrl`      | `string` | Redis connection URL         | Yes      |
+| `auth.username` | `string` | Username for HTTP Basic Auth | No       |
+| `auth.password` | `string` | Password for HTTP Basic Auth | No       |
 
-The adapter supports mounting at any sub-path. Asset URLs and routing are automatically rewritten to match the mount point.
-
----
-
-## CLI Usage
-
-```bash
-bullstudio-app [options]
-```
-
-### Options
-
-| Option              | Short | Description                                    | Default                  |
-| ------------------- | ----- | ---------------------------------------------- | ------------------------ |
-| `--redis <url>`     | `-r`  | Redis connection URL                           | `redis://localhost:6379` |
-| `--port <port>`     | `-p`  | Port to run the dashboard on                   | `4000`                   |
-| `--username <user>` |       | Username for HTTP Basic Auth (production only) | `bullstudio`             |
-| `--password <pass>` |       | Password for HTTP Basic Auth (production only) | (none)                   |
-| `--no-open`         |       | Don't open browser automatically               | Opens browser            |
-| `--help`            | `-h`  | Show help message                              |                          |
+Supports mounting at any sub-path. Asset URLs and routing are automatically rewritten to match the mount point.
 
 ---
 
-## Examples
-
-### Connect to local Redis
+## CLI
 
 ```bash
-bullstudio-app
+bullstudio [options]
 ```
 
-### Connect to a remote Redis server
+| Option              | Short | Description                    | Default                  |
+| ------------------- | ----- | ------------------------------ | ------------------------ |
+| `--redis <url>`     | `-r`  | Redis connection URL           | `redis://localhost:6379` |
+| `--port <port>`     | `-p`  | Port to run the dashboard on   | `4000`                   |
+| `--username <user>` |       | Username for HTTP Basic Auth   | `bullstudio`             |
+| `--password <pass>` |       | Password for HTTP Basic Auth   | (none)                   |
+| `--no-open`         |       | Don't open browser             | Opens browser            |
+| `--help`            | `-h`  | Show help                      |                          |
 
 ```bash
-bullstudio-app -r redis://myhost.com:6379
-```
+# Remote Redis
+bullstudio -r redis://myhost.com:6379
 
-### Connect with authentication
+# Redis with auth
+bullstudio -r redis://username:password@myhost.com:6379
 
-```bash
-bullstudio-app -r redis://:yourpassword@myhost.com:6379
-```
+# Custom port, no browser
+bullstudio -r redis://:secret@production.redis.io:6379 -p 8080 --no-open
 
-### Use a custom port
-
-```bash
-bullstudio-app -p 5000
-```
-
-### Connect to Redis with username and password
-
-```bash
-bullstudio-app -r redis://username:password@myhost.com:6379
-```
-
-### Run without opening browser
-
-```bash
-bullstudio-app --no-open
-```
-
-### Combine options
-
-```bash
-bullstudio-app -r redis://:secret@production.redis.io:6379 -p 8080 --no-open
-```
-
-### Protect dashboard with password
-
-```bash
-bullstudio-app --password secret123
-```
-
-The browser will prompt for credentials:
-
-- Username: `bullstudio`
-- Password: `secret123`
-
----
-
-## Authentication
-
-You can protect the dashboard with HTTP Basic Auth in **production mode only**. Development mode (`--dev`) does not require authentication.
-
-### Usage
-
-```bash
-# Using CLI flag
-bullstudio-app --password secret123
-
-# Custom username
-bullstudio-app --username bullstudio_admin --password secret123
-
-# Using environment variable
-BULLSTUDIO_PASSWORD=secret123 bullstudio-app
-```
-
-### Authentication Details
-
-- **Username**: `bullstudio` (default, customizable via `--username` or `BULLSTUDIO_USERNAME`)
-- **Password**: Set via `--password` flag or `BULLSTUDIO_PASSWORD` environment variable
-- **Mode**: Only applies to production mode (default). Development mode (`--dev`) bypasses authentication
-- **Method**: HTTP Basic Auth (browser will show native login dialog)
-
-### Health Check
-
-The `/health` endpoint is publicly accessible without authentication:
-
-```bash
-curl http://localhost:4000/health
-# {"status":"ok","timestamp":"2026-02-08T21:58:47.508Z","redis":"configured"}
+# Protect dashboard
+bullstudio --password secret123
 ```
 
 ---
@@ -245,51 +171,75 @@ curl http://localhost:4000/health
 ## Features
 
 ### Overview Dashboard
-Get a bird's-eye view of your queue health with real-time metrics, throughput charts, and failure tracking.
+Real-time queue health metrics, throughput charts, processing time analytics, failure tracking, slowest jobs, and failing job types.
 
 ### Jobs Browser
 - Browse all jobs across queues
-- Filter by status (waiting, active, completed, failed, delayed)
+- Filter by status: waiting, active, completed, failed, delayed, paused, waiting-children
 - Search jobs by name, ID, or data
-- Retry failed jobs with one click
-- View detailed job data, return values, and stack traces
+- Retry or delete jobs
+- View job data, return values, and stack traces
 
 ### Flows Visualization
-- Visualize parent-child job relationships as interactive graphs
-- See the live state of each job in the flow
-- Click nodes to navigate to job details
+- Interactive graph of parent-child job relationships
+- Live job state tracking per node
+- Click-through to job details
 - Auto-refresh while flows are active
+
+### Queue Management
+- List and inspect all discovered queues
+- Pause and resume queues
+- Per-queue statistics and health
+
+### Auto-Detection
+Automatically scans Redis for BullMQ and Bull metadata keys and detects the correct provider.
 
 ---
 
-## Requirements
+## Authentication
 
-- **Node.js** 18 or higher
-- **Redis** server running (local or remote)
-- **BullMQ** queues in your Redis instance
+HTTP Basic Auth for the standalone CLI (production mode only).
+
+```bash
+# CLI flag
+bullstudio --password secret123
+
+# Custom username
+bullstudio --username admin --password secret123
+
+# Environment variable
+BULLSTUDIO_PASSWORD=secret123 bullstudio
+```
+
+For the Express adapter, pass `auth` in the options (see above).
+
+The `/health` endpoint is always publicly accessible:
+
+```bash
+curl http://localhost:4000/health
+# {"status":"ok","timestamp":"...","redis":"configured"}
+```
 
 ---
 
 ## Environment Variables
 
-You can also configure bullstudio using environment variables:
+| Variable              | Description                  | Default                  |
+| --------------------- | ---------------------------- | ------------------------ |
+| `REDIS_URL`           | Redis connection URL         | `redis://localhost:6379` |
+| `PORT`                | Dashboard port               | `4000`                   |
+| `BULLSTUDIO_USERNAME` | HTTP Basic Auth username     | `bullstudio`             |
+| `BULLSTUDIO_PASSWORD` | HTTP Basic Auth password     | (none)                   |
 
-```bash
-export REDIS_URL=redis://localhost:6379
-export PORT=4000
-export BULLSTUDIO_USERNAME=bullstudio
-export BULLSTUDIO_PASSWORD=secret123
-bullstudio-app
-```
+CLI flags take precedence over environment variables.
 
-| Variable              | Description                                    | Default                  |
-| --------------------- | ---------------------------------------------- | ------------------------ |
-| `REDIS_URL`           | Redis connection URL                           | `redis://localhost:6379` |
-| `PORT`                | Port to run the dashboard on                   | `4000`                   |
-| `BULLSTUDIO_USERNAME` | Username for HTTP Basic Auth (production only) | `bullstudio`             |
-| `BULLSTUDIO_PASSWORD` | Password for HTTP Basic Auth (production only) | (none)                   |
+---
 
-Command-line options take precedence over environment variables.
+## Requirements
+
+- **Node.js** 18+
+- **Redis** server (local or remote)
+- **Bull** or **BullMQ** queues in your Redis instance
 
 ---
 
@@ -300,29 +250,25 @@ Command-line options take precedence over environment variables.
 Make sure Redis is running:
 
 ```bash
-# Check if Redis is running
 redis-cli ping
 
-# Start Redis (macOS with Homebrew)
+# macOS
 brew services start redis
 
-# Start Redis (Docker)
+# Docker
 docker run -d -p 6379:6379 redis
 ```
 
 ### No queues showing up
 
-bullstudio discovers queues by scanning for BullMQ metadata keys in Redis. Make sure:
 1. Your application has created at least one queue
 2. You're connecting to the correct Redis instance
-3. If using a prefix other than `bull`, your queues use the default prefix
+3. Your queues use the default `bull` prefix
 
 ### Port already in use
 
-Use a different port:
-
 ```bash
-bullstudio-app -p 5000
+bullstudio -p 5000
 ```
 
 ---

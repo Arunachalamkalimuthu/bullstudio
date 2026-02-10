@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
-  "module": "true",
   "scripts": {
     "lint": "eslint . --max-warnings 0"
   },
