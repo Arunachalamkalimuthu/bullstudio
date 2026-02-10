@@ -142,7 +142,7 @@ export function AppSidebar() {
             {VERSION}
           </span>
           <a
-            href="https://github.com/emirce/bullstudio"
+            href="https://github.com/Arunachalamkalimuthu/bullstudio"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-zinc-300 transition-colors"

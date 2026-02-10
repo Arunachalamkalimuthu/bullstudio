@@ -36,7 +36,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/emirce/bullstudio"
+    "url": "https://github.com/Arunachalamkalimuthu/bullstudio"
   },
   "dependencies": {
     "bullstudio": ">=1.1.0"
