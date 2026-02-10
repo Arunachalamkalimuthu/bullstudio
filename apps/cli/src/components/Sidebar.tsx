@@ -17,6 +17,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useTRPC } from "@/integrations/trpc/react";
 import { useQuery } from "@tanstack/react-query";
 import { VERSION } from "@/const";
+import { assetUrl } from "@/lib/utils";
 
 export function AppSidebar() {
   const location = useLocation();
@@ -66,7 +67,7 @@ export function AppSidebar() {
       <SidebarHeader className="h-16 justify-center border-b border-sidebar-border px-4">
         <div className="flex items-center gap-3">
           <img
-            src="/logo.svg"
+            src={assetUrl("/logo.svg")}
             alt="bullstudio"
             className="size-8 shrink-0"
           />

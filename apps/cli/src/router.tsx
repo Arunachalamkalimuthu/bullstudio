@@ -5,12 +5,20 @@ import * as TanstackQuery from "./integrations/tanstack-query/root-provider";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
+function getBasePath(): string | undefined {
+  if (typeof window !== "undefined" && window.__BULLSTUDIO_BASE_PATH__) {
+    return window.__BULLSTUDIO_BASE_PATH__;
+  }
+  return undefined;
+}
+
 // Create a new router instance
 export const getRouter = () => {
   const rqContext = TanstackQuery.getContext();
 
   const router = createRouter({
     routeTree,
+    basepath: getBasePath(),
     context: { ...rqContext },
     defaultPreload: "intent",
     Wrap: (props: { children: React.ReactNode }) => {

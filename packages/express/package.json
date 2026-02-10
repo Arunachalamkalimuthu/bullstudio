@@ -1,0 +1,51 @@
+{
+  "name": "bullstudio-express",
+  "version": "1.1.0",
+  "description": "Express middleware adapter for bullstudio queue dashboard",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "bullmq",
+    "bull",
+    "queue",
+    "redis",
+    "dashboard",
+    "express",
+    "middleware",
+    "monitoring"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emirce/bullstudio"
+  },
+  "peerDependencies": {
+    "bullstudio-app": ">=1.1.0",
+    "express": ">=4.0.0"
+  },
+  "devDependencies": {
+    "@bullstudio/typescript-config": "workspace:*",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "express": "^5.1.0",
+    "typescript": "^5.7.2"
+  }
+}

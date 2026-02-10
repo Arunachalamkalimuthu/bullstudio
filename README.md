@@ -10,10 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://hub.docker.com/r/emirce/bullstudio"><img src="https://img.shields.io/docker/v/emirce/bullstudio?sort=semver&label=Docker%20Hub" alt="Docker Hub" /></a>
-  <a href="https://hub.docker.com/r/emirce/bullstudio"><img src="https://img.shields.io/docker/pulls/emirce/bullstudio" alt="Docker Pulls" /></a>
   <img src="https://img.shields.io/badge/BullMQ-5.x-orange" alt="BullMQ" />
-  <img src="https://img.shields.io/badge/Bullx-4.x-orange" alt="Bull" />
+  <img src="https://img.shields.io/badge/Bull-4.x-orange" alt="Bull" />
   <img src="https://img.shields.io/badge/React-19-blue" alt="React" />
   <img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript" />
 </p>
@@ -29,10 +27,10 @@
 ## Quick Start
 
 ```bash
-npx bullstudio -r <redis_url>
+npx bullstudio-app -r <redis_url>
 ```
 
-That's it! The dashboard opens automatically at [http://localhost:4000](http://localhost:4000). No code integration needed. Bullstudio automatically detects your provider (Bull or BullMq).
+That's it! The dashboard opens automatically at [http://localhost:4000](http://localhost:4000). No code integration needed. bullstudio automatically detects your provider (Bull or BullMQ).
 
 ---
 
@@ -41,112 +39,102 @@ That's it! The dashboard opens automatically at [http://localhost:4000](http://l
 ### Run directly with npx (recommended)
 
 ```bash
-npx bullstudio
+npx bullstudio-app
 ```
 
 ### Or install globally
 
 ```bash
-npm install -g bullstudio
-bullstudio
+npm install -g bullstudio-app
+bullstudio-app
 ```
 
 ---
 
-## Docker
+## Instrument Your App
 
-### Quick Start
+Embed the bullstudio dashboard directly into your existing Express or NestJS application using the `bullstudio-express` adapter. No separate process needed.
+
+### Installation
 
 ```bash
-docker run -d \
-  -p 4000:4000 \
-  -e REDIS_URL=redis://host.docker.internal:6379 \
-  emirce/bullstudio
+npm install bullstudio-express bullstudio-app
 ```
 
-The dashboard is available at [http://localhost:4000](http://localhost:4000).
+### Express
 
-### Connect to Redis
+```typescript
+import express from "express";
+import { createBullStudio } from "bullstudio-express";
 
-```bash
-# Local Redis (Docker for Mac/Windows)
-docker run -d -p 4000:4000 -e REDIS_URL=redis://host.docker.internal:6379 emirce/bullstudio
+const app = express();
 
-# Remote Redis
-docker run -d -p 4000:4000 -e REDIS_URL=redis://myhost.com:6379 emirce/bullstudio
+app.use(
+  "/queues",
+  createBullStudio({
+    redisUrl: "redis://localhost:6379",
+  })
+);
 
-# Redis with authentication
-docker run -d -p 4000:4000 -e REDIS_URL=redis://:yourpassword@myhost.com:6379 emirce/bullstudio
+app.listen(3000, () => {
+  console.log("Dashboard available at http://localhost:3000/queues");
+});
 ```
 
-### Custom Port
+### NestJS (via Express adapter)
 
-```bash
-docker run -d -p 8080:8080 -e PORT=8080 -e REDIS_URL=redis://host.docker.internal:6379 emirce/bullstudio
+```typescript
+import { NestFactory } from "@nestjs/core";
+import { ExpressAdapter } from "@nestjs/platform-express";
+import { createBullStudio } from "bullstudio-express";
+import { AppModule } from "./app.module";
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.use(
+    "/queues",
+    createBullStudio({
+      redisUrl: "redis://localhost:6379",
+    })
+  );
+
+  await app.listen(3000);
+}
+bootstrap();
 ```
 
 ### With Authentication
 
-```bash
-docker run -d \
-  -p 4000:4000 \
-  -e REDIS_URL=redis://host.docker.internal:6379 \
-  -e BULLSTUDIO_PASSWORD=secret123 \
-  emirce/bullstudio
+```typescript
+app.use(
+  "/queues",
+  createBullStudio({
+    redisUrl: "redis://localhost:6379",
+    auth: {
+      username: "admin",
+      password: "secret123",
+    },
+  })
+);
 ```
 
-### Docker Compose
+### Options
 
-```yaml
-services:
-  bullstudio:
-    image: emirce/bullstudio
-    ports:
-      - "4000:4000"
-    environment:
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - redis
+| Option              | Type     | Description                          | Required |
+| ------------------- | -------- | ------------------------------------ | -------- |
+| `redisUrl`          | `string` | Redis connection URL                 | Yes      |
+| `auth.username`     | `string` | Username for HTTP Basic Auth         | No       |
+| `auth.password`     | `string` | Password for HTTP Basic Auth         | No       |
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-```
-
-```bash
-docker compose up -d
-```
-
-### Environment Variables
-
-| Variable              | Description                               | Default                  |
-| --------------------- | ----------------------------------------- | ------------------------ |
-| `REDIS_URL`           | Redis connection URL                      | `redis://localhost:6379` |
-| `PORT`                | Port to run the dashboard on              | `4000`                   |
-| `BULLSTUDIO_USERNAME` | Password for HTTP Basic Auth (production) | `bullstudio`             |
-| `BULLSTUDIO_PASSWORD` | Password for HTTP Basic Auth (production) | (none)                   |
-
-### Available Tags
-
-| Tag | Description |
-|-----|-------------|
-| `latest` | Latest build from the `main` branch |
-| `x.y.z` | Specific release version (e.g., `0.1.4`) |
-| `x.y` | Minor version (e.g., `0.1`) |
-| `x` | Major version (e.g., `0`) |
-
-### Supported Platforms
-
-- `linux/amd64`
-- `linux/arm64`
+The adapter supports mounting at any sub-path. Asset URLs and routing are automatically rewritten to match the mount point.
 
 ---
 
-## Usage
+## CLI Usage
 
 ```bash
-bullstudio [options]
+bullstudio-app [options]
 ```
 
 ### Options
@@ -167,49 +155,49 @@ bullstudio [options]
 ### Connect to local Redis
 
 ```bash
-bullstudio
+bullstudio-app
 ```
 
 ### Connect to a remote Redis server
 
 ```bash
-bullstudio -r redis://myhost.com:6379
+bullstudio-app -r redis://myhost.com:6379
 ```
 
 ### Connect with authentication
 
 ```bash
-bullstudio -r redis://:yourpassword@myhost.com:6379
+bullstudio-app -r redis://:yourpassword@myhost.com:6379
 ```
 
 ### Use a custom port
 
 ```bash
-bullstudio -p 5000
+bullstudio-app -p 5000
 ```
 
 ### Connect to Redis with username and password
 
 ```bash
-bullstudio -r redis://username:password@myhost.com:6379
+bullstudio-app -r redis://username:password@myhost.com:6379
 ```
 
 ### Run without opening browser
 
 ```bash
-bullstudio --no-open
+bullstudio-app --no-open
 ```
 
 ### Combine options
 
 ```bash
-bullstudio -r redis://:secret@production.redis.io:6379 -p 8080 --no-open
+bullstudio-app -r redis://:secret@production.redis.io:6379 -p 8080 --no-open
 ```
 
 ### Protect dashboard with password
 
 ```bash
-bullstudio --password secret123
+bullstudio-app --password secret123
 ```
 
 The browser will prompt for credentials:
@@ -227,21 +215,18 @@ You can protect the dashboard with HTTP Basic Auth in **production mode only**. 
 
 ```bash
 # Using CLI flag
-bullstudio --password secret123
+bullstudio-app --password secret123
 
-## Custom username
-bullstudio --username bullstudio_admin --password secret123
+# Custom username
+bullstudio-app --username bullstudio_admin --password secret123
 
 # Using environment variable
-BULLSTUDIO_PASSWORD=secret123 bullstudio
-
-# Docker with authentication
-docker run -e BULLSTUDIO_PASSWORD=secret123 -p 4000:4000 emirce/bullstudio
+BULLSTUDIO_PASSWORD=secret123 bullstudio-app
 ```
 
 ### Authentication Details
 
-- **Username**: `bullstudio` (fixed, cannot be changed)
+- **Username**: `bullstudio` (default, customizable via `--username` or `BULLSTUDIO_USERNAME`)
 - **Password**: Set via `--password` flag or `BULLSTUDIO_PASSWORD` environment variable
 - **Mode**: Only applies to production mode (default). Development mode (`--dev`) bypasses authentication
 - **Method**: HTTP Basic Auth (browser will show native login dialog)
@@ -294,7 +279,7 @@ export REDIS_URL=redis://localhost:6379
 export PORT=4000
 export BULLSTUDIO_USERNAME=bullstudio
 export BULLSTUDIO_PASSWORD=secret123
-bullstudio
+bullstudio-app
 ```
 
 | Variable              | Description                                    | Default                  |
@@ -337,7 +322,7 @@ bullstudio discovers queues by scanning for BullMQ metadata keys in Redis. Make 
 Use a different port:
 
 ```bash
-bullstudio -p 5000
+bullstudio-app -p 5000
 ```
 
 ---
