@@ -42,13 +42,29 @@ export async function toFetchRequest(
 
   let body: ArrayBuffer | undefined;
   if (req.method !== "GET" && req.method !== "HEAD") {
-    body = await readBody(req);
+    body = await getBody(req);
   }
 
   return new Request(url, { method: req.method, headers, body });
 }
 
-function readBody(req: ExpressRequest): Promise<ArrayBuffer> {
+/**
+ * Get the request body, handling the case where body-parsing middleware
+ * (e.g. express.json()) has already consumed the stream.
+ */
+async function getBody(req: ExpressRequest): Promise<ArrayBuffer> {
+  // If body-parsing middleware already ran, req.body is populated
+  // and the raw stream is consumed — re-serialize it.
+  if (req.body !== undefined && req.body !== null) {
+    const serialized =
+      typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+    return new TextEncoder().encode(serialized).buffer as ArrayBuffer;
+  }
+
+  return readRawBody(req);
+}
+
+function readRawBody(req: ExpressRequest): Promise<ArrayBuffer> {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
     req.on("data", (chunk: Buffer) => chunks.push(chunk));

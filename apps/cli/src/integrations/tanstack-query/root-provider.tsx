@@ -8,11 +8,27 @@ import type { TRPCRouter } from '@/integrations/trpc/router'
 import { TRPCProvider } from '@/integrations/trpc/react'
 
 function getUrl() {
-  const base = (() => {
-    if (typeof window !== 'undefined') return window.__BULLSTUDIO_BASE_PATH__ ?? ''
-    return `http://localhost:${process.env.PORT ?? 3000}`
-  })()
-  return `${base}/api/trpc`
+  if (typeof window !== 'undefined') {
+    return `${window.__BULLSTUDIO_BASE_PATH__ ?? ''}/api/trpc`
+  }
+  return '/api/trpc'
+}
+
+/**
+ * During SSR, call the TRPC router directly in-process instead of
+ * making HTTP loopback requests. This avoids port/base-path issues
+ * when bullstudio is mounted as middleware in a host app.
+ */
+const serverFetch: typeof globalThis.fetch = async (input, init) => {
+  const [{ fetchRequestHandler }, { trpcRouter }] = await Promise.all([
+    import('@trpc/server/adapters/fetch'),
+    import('@/integrations/trpc/router'),
+  ])
+  return fetchRequestHandler({
+    req: new Request(input, init),
+    router: trpcRouter,
+    endpoint: '/api/trpc',
+  })
 }
 
 export const trpcClient = createTRPCClient<TRPCRouter>({
@@ -20,6 +36,7 @@ export const trpcClient = createTRPCClient<TRPCRouter>({
     httpBatchStreamLink({
       transformer: superjson,
       url: getUrl(),
+      fetch: typeof window === 'undefined' ? serverFetch : undefined,
     }),
   ],
 })

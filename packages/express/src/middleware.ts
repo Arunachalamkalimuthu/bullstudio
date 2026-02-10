@@ -18,8 +18,20 @@ import { createSsrHandler } from "./ssr-handler.js";
  * ```
  */
 export function createBullStudio(options: BullStudioOptions): Router {
+  if (!options?.redisUrl) {
+    throw new Error(
+      "[bullstudio] `redisUrl` is required. Received: " +
+        JSON.stringify(options?.redisUrl) +
+        ". Make sure the value is defined when calling createBullStudio().",
+    );
+  }
+
   const distDir = resolveBullStudioDist();
   const router = Router();
+
+  if (options.auth) {
+    router.use(createBasicAuthHandler(options.auth));
+  }
 
   router.use(createStaticHandler(distDir));
   router.use(createLazySsrHandler(distDir, options));
@@ -27,14 +39,21 @@ export function createBullStudio(options: BullStudioOptions): Router {
   return router;
 }
 
-function setEnvironment(options: BullStudioOptions): void {
-  warnIfOverwriting("REDIS_URL", options.redisUrl);
-  process.env.REDIS_URL = options.redisUrl;
+function setEnvironment(options: BullStudioOptions, basePath: string): void {
+  setEnvVar("REDIS_URL", options.redisUrl);
+  // Always set base path, even if empty (mounted at root)
+  process.env.BULLSTUDIO_BASE_PATH = basePath;
 
   if (options.auth) {
-    process.env.BULLSTUDIO_USERNAME = options.auth.username;
-    process.env.BULLSTUDIO_PASSWORD = options.auth.password;
+    setEnvVar("BULLSTUDIO_USERNAME", options.auth.username);
+    setEnvVar("BULLSTUDIO_PASSWORD", options.auth.password);
   }
+}
+
+function setEnvVar(key: string, value: string | undefined): void {
+  if (!value) return;
+  warnIfOverwriting(key, value);
+  process.env[key] = value;
 }
 
 function warnIfOverwriting(key: string, newValue: string): void {
@@ -44,6 +63,21 @@ function warnIfOverwriting(key: string, newValue: string): void {
       `[bullstudio] Overwriting process.env.${key}. Multiple createBullStudio() calls with different values are not supported.`,
     );
   }
+}
+
+function createBasicAuthHandler(
+  auth: NonNullable<BullStudioOptions["auth"]>,
+): RequestHandler {
+  const expected =
+    "Basic " + Buffer.from(`${auth.username}:${auth.password}`).toString("base64");
+
+  return (req, res, next) => {
+    const header = req.headers.authorization;
+    if (header === expected) return next();
+
+    res.setHeader("WWW-Authenticate", 'Basic realm="bullstudio"');
+    res.status(401).end("Authentication required");
+  };
 }
 
 /**
@@ -59,8 +93,9 @@ function createLazySsrHandler(
 
   return (req, res, next) => {
     if (!handler) {
-      setEnvironment(options);
-      handler = createSsrHandler(distDir, normalizeBasePath(req.baseUrl));
+      const basePath = normalizeBasePath(req.baseUrl);
+      setEnvironment(options, basePath);
+      handler = createSsrHandler(distDir, basePath);
     }
     handler(req, res, next);
   };
