@@ -34,7 +34,11 @@ app.listen(3000, () => {
 
 ### NestJS
 
-Mount in `main.ts`:
+`createBullStudio()` returns an Express `Router`. For it to work correctly, it **must** be mounted using Express's native `app.use(path, router)` so that `req.baseUrl` and path stripping are handled properly.
+
+#### Recommended: Mount in `main.ts`
+
+This is the most reliable approach because it calls Express's `app.use()` directly:
 
 ```typescript
 import { NestFactory } from "@nestjs/core";
@@ -47,7 +51,7 @@ async function bootstrap() {
   app.use(
     "/queues",
     createBullStudio({
-      redisUrl: "redis://localhost:6379",
+      redisUrl: process.env.REDIS_URL,
     })
   );
 
@@ -56,7 +60,9 @@ async function bootstrap() {
 bootstrap();
 ```
 
-Or use the `MiddlewareConsumer` in a module:
+#### Alternative: `MiddlewareConsumer`
+
+You can also mount the router using NestJS's `MiddlewareConsumer`. Pass the router as the **only** argument to `.apply()` — do not chain it with other middleware, as that can break path resolution:
 
 ```typescript
 import { MiddlewareConsumer, Module } from "@nestjs/common";
@@ -68,18 +74,23 @@ export class DashboardModule {
   constructor(private readonly configService: ConfigService) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    const bullStudioRouter = createBullStudio({
-      redisUrl: this.configService.get("REDIS_URL"),
-      auth: {
-        username: this.configService.get("BULLSTUDIO_USERNAME"),
-        password: this.configService.get("BULLSTUDIO_PASSWORD"),
-      },
-    });
-
-    consumer.apply(bullStudioRouter).forRoutes("/queues");
+    // Important: pass the router as the sole argument to .apply()
+    consumer
+      .apply(
+        createBullStudio({
+          redisUrl: this.configService.get("REDIS_URL"),
+          auth: {
+            username: this.configService.get("BULLSTUDIO_USERNAME"),
+            password: this.configService.get("BULLSTUDIO_PASSWORD"),
+          },
+        })
+      )
+      .forRoutes("/queues");
   }
 }
 ```
+
+> **Common pitfall:** Do not wrap the router with additional middleware in the same `.apply()` call (e.g. `consumer.apply(myMiddleware, createBullStudio(...))`). This breaks the Express path-stripping behavior that bullstudio relies on. If you need to run middleware before the dashboard (e.g. auth guards), apply it separately or use the `auth` option instead.
 
 ### With Authentication
 
