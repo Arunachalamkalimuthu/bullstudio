@@ -90,6 +90,8 @@ app.listen(3000);
 
 ### NestJS
 
+Mount in `main.ts`:
+
 ```typescript
 import { NestFactory } from "@nestjs/core";
 import { createBullStudio } from "bullstudio-express";
@@ -108,6 +110,31 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
+```
+
+Or use the `MiddlewareConsumer` in a module:
+
+```typescript
+import { MiddlewareConsumer, Module } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { createBullStudio } from "bullstudio-express";
+
+@Module({})
+export class DashboardModule {
+  constructor(private readonly configService: ConfigService) {}
+
+  configure(consumer: MiddlewareConsumer): void {
+    const bullStudioRouter = createBullStudio({
+      redisUrl: this.configService.get("REDIS_URL"),
+      auth: {
+        username: this.configService.get("BULLSTUDIO_USERNAME"),
+        password: this.configService.get("BULLSTUDIO_PASSWORD"),
+      },
+    });
+
+    consumer.apply(bullStudioRouter).forRoutes("/queues");
+  }
+}
 ```
 
 ### With Authentication

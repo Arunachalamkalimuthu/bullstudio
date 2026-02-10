@@ -1,14 +1,15 @@
 {
   "name": "bullstudio-express",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "Express middleware adapter for bullstudio queue dashboard",
-  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "files": [
@@ -38,7 +39,7 @@
     "url": "https://github.com/emirce/bullstudio"
   },
   "peerDependencies": {
-    "bullstudio-app": ">=1.1.0",
+    "bullstudio": ">=1.1.0",
     "express": ">=4.0.0"
   },
   "devDependencies": {

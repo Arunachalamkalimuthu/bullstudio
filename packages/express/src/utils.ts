@@ -7,7 +7,7 @@ import type { Request as ExpressRequest } from "express";
  * Uses createRequire so it works regardless of the consumer's module system.
  */
 export function resolveBullStudioDist(): string {
-  const require = createRequire(import.meta.url);
+  const require = createRequire(__filename);
   const bullstudioPkg = require.resolve("bullstudio/package.json");
   return join(bullstudioPkg, "..", "dist");
 }
