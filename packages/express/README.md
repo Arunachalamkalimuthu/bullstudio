@@ -5,10 +5,10 @@ Express middleware adapter for the [bullstudio](https://www.npmjs.com/package/bu
 ## Installation
 
 ```bash
-npm install bullstudio-express bullstudio
+npm install bullstudio-express
 ```
 
-Both packages are required: `bullstudio` contains the dashboard UI and `bullstudio-express` provides the Express integration.
+That's it — the `bullstudio` dashboard is included automatically as a dependency.
 
 ## Usage
 
@@ -125,7 +125,6 @@ The base path is automatically detected from the Express mount point on the firs
 
 - Node.js >= 18
 - Express >= 4.0
-- `bullstudio` >= 1.1.0 (peer dependency)
 
 ## License
 

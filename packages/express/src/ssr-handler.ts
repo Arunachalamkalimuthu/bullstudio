@@ -7,6 +7,16 @@ interface ServerModule {
   fetch: (request: Request) => Promise<Response>;
 }
 
+/**
+ * Native ESM import that survives TypeScript CJS compilation.
+ * When module is "CommonJS", tsc converts `import()` to `require()`,
+ * which breaks for ESM modules and file:// URLs.
+ */
+const importEsm = new Function(
+  "specifier",
+  "return import(specifier)",
+) as (specifier: string) => Promise<any>;
+
 const SKIPPED_HEADERS = new Set(["content-length", "content-encoding"]);
 
 /**
@@ -22,7 +32,7 @@ export function createSsrHandler(
 
   async function getServerModule(): Promise<ServerModule> {
     if (!serverModule) {
-      const mod = await import(pathToFileURL(serverFile).href);
+      const mod = await importEsm(pathToFileURL(serverFile).href);
       serverModule = mod.default || mod;
     }
     return serverModule!;
